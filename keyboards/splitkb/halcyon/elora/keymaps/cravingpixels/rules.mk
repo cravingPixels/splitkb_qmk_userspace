@@ -8,3 +8,7 @@ ENCODER_MAP_ENABLE = yes
 RAW_ENABLE = yes
 WPM_ENABLE = yes
 
+ifdef HLC_TFT_DISPLAY
+SRC += gif1.qgf.c
+endif
+

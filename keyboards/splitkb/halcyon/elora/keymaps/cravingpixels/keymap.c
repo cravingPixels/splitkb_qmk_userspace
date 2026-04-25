@@ -14,6 +14,11 @@
 #include QMK_KEYBOARD_H
 #include "rgb_layers.h"
 
+#ifdef HLC_TFT_DISPLAY
+#    include "users/halcyon_modules/splitkb/hlc_tft_display/hlc_tft_display.h"
+#    include "gif1.qgf.h"
+#endif
+
 // ---------------------------------------------------------------------------
 // Custom keycodes
 // ---------------------------------------------------------------------------
@@ -349,6 +354,85 @@ static uint32_t ss5_deferred(uint32_t trigger_time, void *cb_arg) {
 }
 
 // ---------------------------------------------------------------------------
+// Display mode — left half (HLC_TFT_DISPLAY) only.
+//
+// Mode 1 (default): HLC stock display — large layer number + lock indicators.
+//   display_module_housekeeping_task_user returns true → HLC draws its content.
+// Mode 4 (GIF):     qp_animate drives frames autonomously to lcd_surface.
+//   display_module_housekeeping_task_user returns false → HLC skipped.
+//   display_module_housekeeping_task_kb always flushes lcd_surface → LCD,
+//   so each frame qp_animate writes to the surface reaches the screen on the
+//   next housekeeping cycle.
+//
+// Note: second_display is always false on the Elora (slave half has encoder,
+// not a display module), so that branch is a no-op guard only.
+// ---------------------------------------------------------------------------
+#ifdef HLC_TFT_DISPLAY
+
+static uint8_t current_display_mode = 1;  // 1 = stock, 4 = gif
+
+static painter_image_handle_t gif_handle  = NULL;
+static deferred_token         gif_anim    = INVALID_DEFERRED_TOKEN;
+static bool                   gif_running = false;
+// gif_running is separate from (gif_anim != INVALID_DEFERRED_TOKEN) because
+// qp_animate returns 0 for the first deferred slot, same as INVALID_DEFERRED_TOKEN.
+
+static void gif_start(void) {
+    if (gif_running) {
+        qp_stop_animation(gif_anim);
+        gif_running = false;
+    }
+    if (gif_handle) {
+        qp_close_image(gif_handle);
+        gif_handle = NULL;
+    }
+    gif_handle = qp_load_image_mem(gfx_gif1);
+    if (gif_handle) {
+        gif_anim    = qp_animate(lcd_surface, 0, 0, gif_handle);
+        gif_running = true;
+    }
+}
+
+static void gif_stop(void) {
+    if (gif_running) {
+        qp_stop_animation(gif_anim);
+        gif_running = false;
+    }
+    if (gif_handle) {
+        qp_close_image(gif_handle);
+        gif_handle = NULL;
+    }
+}
+
+bool display_module_housekeeping_task_user(bool second_display) {
+    if (second_display) return true;
+
+    static uint8_t prev_mode = 0xFF;
+
+    if (prev_mode != current_display_mode) {
+        if (prev_mode == 4) gif_stop();
+        if (current_display_mode == 4) {
+            // Clear the surface so no HLC stock pixels bleed through, then start the GIF.
+            qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, 0, 0, 0, true);
+            qp_surface_draw(lcd_surface, lcd, 0, 0, 0);
+            qp_flush(lcd);
+            gif_start();
+        }
+        prev_mode = current_display_mode;
+    }
+
+    if (current_display_mode == 4) {
+        // qp_animate draws frames to lcd_surface via deferred executor.
+        // display_module_housekeeping_task_kb flushes lcd_surface on every cycle.
+        return false;
+    }
+
+    return true;  // stock mode: let HLC draw layer number + lock indicators
+}
+
+#endif  // HLC_TFT_DISPLAY
+
+// ---------------------------------------------------------------------------
 // Custom keycode handling
 // ---------------------------------------------------------------------------
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -373,9 +457,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
 
         case KC_DISP_1:
+        case KC_DISP_4:
+#ifdef HLC_TFT_DISPLAY
+            if (record->event.pressed) {
+                current_display_mode = (keycode == KC_DISP_1) ? 1 : 4;
+            }
+#endif
+            return false;
+
         case KC_DISP_2:
         case KC_DISP_3:
-        case KC_DISP_4:
             return false;
 
         case KC_TT_UP:
