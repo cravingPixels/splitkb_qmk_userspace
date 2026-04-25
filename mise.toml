@@ -1,0 +1,196 @@
+[tools]
+python = "3.11"   # QMK CLI requires Python 3.11+
+
+[env]
+KEYBOARD     = "splitkb/halcyon/elora/rev2"
+KEYMAP       = "cravingpixels"
+TARGET_LEFT  = "splitkb_halcyon_elora_rev2_cravingpixels_left"
+TARGET_RIGHT = "splitkb_halcyon_elora_rev2_cravingpixels_right"
+KEYMAP_DIR   = "{{config_root}}/keyboards/splitkb/halcyon/elora/keymaps/cravingpixels"
+ASSETS_DIR   = "{{config_root}}/../custom-keyboard-config/graphics/lcd/assets"
+QMK_HOME     = "~/.local/share/qmk_firmware"
+
+# ── One-time setup ─────────────────────────────────────────────────────────
+
+[tasks.setup]
+description = "First-time setup: install compilers, QMK CLI, register userspace"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+echo "→ Installing ARM compiler..."
+brew install --cask gcc-arm-embedded
+brew install dos2unix
+echo "→ Installing QMK CLI..."
+pip install --quiet --upgrade qmk
+echo "→ Setting up QMK firmware source..."
+qmk setup --yes -H "$QMK_HOME"
+echo "→ Registering this repo as QMK userspace..."
+qmk config user.overlay_dir="$(realpath .)"
+echo "✓ Done. Run 'mise run compile' to build firmware."
+"""
+
+# ── Compile ─────────────────────────────────────────────────────────────────
+
+[tasks.compile]
+description = "Compile both halves"
+depends = ["compile-left", "compile-right"]
+
+[tasks.compile-left]
+description = "Compile left half (TFT display module)"
+run = "qmk compile -kb $KEYBOARD -km $KEYMAP -e HLC_TFT_DISPLAY=1 -e TARGET=$TARGET_LEFT"
+
+[tasks.compile-right]
+description = "Compile right half (encoder module)"
+run = "qmk compile -kb $KEYBOARD -km $KEYMAP -e HLC_ENCODER_REV2=1 -e TARGET=$TARGET_RIGHT"
+
+# ── Flash ────────────────────────────────────────────────────────────────────
+
+[tasks.flash-left]
+description = "Compile + flash left half — double-tap reset first"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+echo ""
+echo "  Flashing LEFT half. Double-tap reset on the LEFT half now..."
+echo ""
+qmk flash -kb "$KEYBOARD" -km "$KEYMAP" -e HLC_TFT_DISPLAY=1 -e TARGET="$TARGET_LEFT"
+"""
+
+[tasks.flash-right]
+description = "Compile + flash right half — double-tap reset first"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+echo ""
+echo "  Flashing RIGHT half. Double-tap reset on the RIGHT half now..."
+echo ""
+qmk flash -kb "$KEYBOARD" -km "$KEYMAP" -e HLC_ENCODER_REV2=1 -e TARGET="$TARGET_RIGHT"
+"""
+
+# ── Assets ───────────────────────────────────────────────────────────────────
+
+[tasks.convert]
+description = "Convert PNG/GIF assets → QGF (rgb565, full color). Usage: mise run convert"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+shopt -s nullglob
+for f in "$ASSETS_DIR"/*.png "$ASSETS_DIR"/*.gif; do
+    echo "  Converting $f (rgb565)"
+    qmk painter-convert-graphics -i "$f" -o "$KEYMAP_DIR/" -f rgb565
+done
+echo "Done."
+"""
+
+[tasks.convert-pal]
+description = "Convert PNG/GIF assets → QGF (pal16, ~4x smaller, good for pixel art). Usage: mise run convert-pal"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+shopt -s nullglob
+for f in "$ASSETS_DIR"/*.png "$ASSETS_DIR"/*.gif; do
+    echo "  Converting $f (pal16)"
+    qmk painter-convert-graphics -i "$f" -o "$KEYMAP_DIR/" -f pal16
+done
+echo "Done."
+"""
+
+[tasks.convert-gif]
+description = "Convert GIF assets → QGF (rgb565). Usage: mise run convert-gif"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+for f in gif1 gif2 gif3; do
+    src="$ASSETS_DIR/${f}.gif"
+    [ -f "$src" ] || { echo "  Skipping $src (not found)"; continue; }
+    echo "  Converting $src (rgb565)"
+    qmk painter-convert-graphics -i "$src" -o "$KEYMAP_DIR/" -f rgb565
+done
+echo "Done."
+"""
+
+[tasks.flash-stats]
+description = "Show firmware flash usage per side with per-file verbose breakdown"
+run = """
+#!/usr/bin/env python3
+import os, struct, sys
+from pathlib import Path
+
+QMK_HOME   = Path(os.environ.get("QMK_HOME",   "~/.local/share/qmk_firmware")).expanduser()
+KEYMAP_DIR = Path(os.environ.get("KEYMAP_DIR", "")).expanduser()
+ASSETS_DIR = Path(os.environ.get("ASSETS_DIR", "")).expanduser()
+BUILD_DIR  = QMK_HOME / ".build"
+FLASH_SIZE = 2 * 1024 * 1024  # RP2040: 2 MB
+
+targets = {
+    "left":  os.environ.get("TARGET_LEFT",  "splitkb_halcyon_elora_rev2_cravingpixels_left"),
+    "right": os.environ.get("TARGET_RIGHT", "splitkb_halcyon_elora_rev2_cravingpixels_right"),
+}
+
+def uf2_flash_used(path):
+    data = path.read_bytes()
+    count = 0
+    for i in range(0, len(data), 512):
+        block = data[i:i + 512]
+        if len(block) < 8:
+            continue
+        magic0, magic1 = struct.unpack_from("<II", block, 0)
+        if magic0 == 0x0A324655 and magic1 == 0x9E5D5157:
+            count += 1
+    return count * 256  # each UF2 record carries 256 bytes of flash data
+
+def bar(pct, width=20):
+    filled = int(pct / 100 * width)
+    return "█" * filled + "░" * (width - filled)
+
+print()
+for side, target in targets.items():
+    uf2_path = BUILD_DIR / f"{target}.uf2"
+    if not uf2_path.exists():
+        print(f"  [{side.upper():5}]  {uf2_path} — not found (run: mise run compile)")
+        continue
+    used = uf2_flash_used(uf2_path)
+    pct  = used / FLASH_SIZE * 100
+    free = FLASH_SIZE - used
+    print(f"  [{side.upper():5}]  [{bar(pct)}]  {used / 1024:6.1f} KB / {FLASH_SIZE // 1024} KB  "
+          f"({pct:.1f}% used,  {free // 1024} KB free)")
+
+# ── Verbose: QGF binary sizes from header declarations ───────────────────────
+import re
+if KEYMAP_DIR.exists():
+    h_files = sorted(p for p in KEYMAP_DIR.iterdir() if p.name.endswith(".qgf.h"))
+    if h_files:
+        print()
+        print("  Keymap QGF assets (binary sizes from header declarations):")
+        total_bin = 0
+        for h in h_files:
+            text = h.read_text()
+            pat = 'extern\\s+const\\s+uint8_t\\s+\\w+\\[(\\d+)\\]'
+            m = re.search(pat, text)
+            if not m:
+                continue
+            name = h.name.replace(".qgf.h", "")
+            sz   = int(m.group(1))
+            total_bin += sz
+            pct  = sz / FLASH_SIZE * 100
+            print(f"    {name + '.qgf':<32}  {sz / 1024:6.1f} KB  ({pct:.2f}% of flash)")
+        print(f"    {'TOTAL QGF':<32}  {total_bin / 1024:6.1f} KB  "
+              f"({total_bin / FLASH_SIZE * 100:.2f}% of flash)")
+
+# ── Verbose: original GIF assets for comparison ───────────────────────────────
+if ASSETS_DIR.exists():
+    gif_files = sorted(p for p in ASSETS_DIR.iterdir()
+                       if p.suffix == ".gif" and not p.stem.endswith("_raw"))
+    if gif_files:
+        print()
+        print("  Original GIF sources (for reference):")
+        for p in gif_files:
+            sz = p.stat().st_size
+            print(f"    {p.name:<36}  {sz / 1024:5.1f} KB")
+
+print()
+"""
+
+[tasks.clean]
+description = "Remove QGF build artifacts from keymap directory"
+run = "rm -f '$KEYMAP_DIR'/*.qgf.* && echo 'Clean.'"
