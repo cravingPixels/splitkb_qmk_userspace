@@ -9,3 +9,9 @@ RAW_ENABLE = yes
 WPM_ENABLE = yes
 OS_DETECTION_ENABLE = yes
 
+ifdef HLC_TFT_DISPLAY
+SRC += gif_wpm.qgf.c
+SRC += FiraCodeNerdFontMono-Regular-24.qff.c
+SRC += stats_ui.c
+endif
+

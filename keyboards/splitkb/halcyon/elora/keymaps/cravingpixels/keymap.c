@@ -365,6 +365,8 @@ static uint32_t ss5_deferred(uint32_t trigger_time, void *cb_arg) {
 // ---------------------------------------------------------------------------
 #ifdef HLC_TFT_DISPLAY
 
+#    include "stats_ui.h"
+
 static uint8_t current_display_mode = 1;  // 1 = stock HLC
 
 bool display_module_housekeeping_task_user(bool second_display) {
@@ -373,7 +375,28 @@ bool display_module_housekeeping_task_user(bool second_display) {
     static uint8_t prev_mode = 0xFF;
 
     if (prev_mode != current_display_mode) {
+        // ── Exit old mode ──────────────────────────────────────────────────────
+        if (prev_mode == 2) {
+            stats_ui_cleanup();
+            qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, 0, 0, 0, true);
+            qp_surface_draw(lcd_surface, lcd, 0, 0, 0);
+            qp_flush(lcd);
+            display_invalidate_cache();
+        }
+        // ── Enter new mode ─────────────────────────────────────────────────────
+        if (current_display_mode == 2) {
+            stats_ui_invalidate();
+        }
         prev_mode = current_display_mode;
+    }
+
+    if (current_display_mode == 2) {
+        static uint32_t last_stats = 0;
+        if (timer_elapsed32(last_stats) >= 100) {
+            stats_ui_draw();
+            last_stats = timer_read32();
+        }
+        return false;
     }
 
     return true;  // mode 1: let HLC draw stock layer/lock widget
@@ -417,10 +440,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_DISP_4:
 #ifdef HLC_TFT_DISPLAY
             if (record->event.pressed) {
-                if      (keycode == KC_DISP_1) current_display_mode = 1;
-                else if (keycode == KC_DISP_2) current_display_mode = 2;
-                else if (keycode == KC_DISP_3) current_display_mode = 3;
-                else                           current_display_mode = 4;
+                if (keycode == KC_DISP_1) {
+                    current_display_mode = 1;
+                } else if (keycode == KC_DISP_2) {
+                    if (current_display_mode == 2) {
+                        stats_ui_cycle_bottom();
+                    } else {
+                        current_display_mode = 2;
+                    }
+                } else if (keycode == KC_DISP_3) {
+                    current_display_mode = 3;
+                } else {
+                    current_display_mode = 4;
+                }
             }
 #endif
             return false;
