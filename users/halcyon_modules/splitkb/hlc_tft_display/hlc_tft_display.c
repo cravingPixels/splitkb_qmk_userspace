@@ -243,6 +243,13 @@ void update_display(void) {
     }
 }
 
+// Force update_display() to redraw everything on the next call regardless of
+// cached state.  Call this after wiping the surface so HLC repaints cleanly.
+void display_invalidate_cache(void) {
+    last_led_usb_state.raw = ~host_keyboard_led_state().raw;
+    last_layer_state       = ~layer_state;
+}
+
 // Called from halcyon.c
 void module_suspend_power_down_kb(void) {
     qp_power(lcd, false);

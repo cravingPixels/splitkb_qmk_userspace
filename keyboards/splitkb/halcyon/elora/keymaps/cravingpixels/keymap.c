@@ -21,9 +21,9 @@
 enum custom_keycodes {
     SS5_KEY = SAFE_RANGE,       // Cmd+Shift+5 (macOS screenshot menu)
     KC_DISP_1,                  // LCD display mode 1 — stock HLC widget
-    KC_DISP_2,                  // LCD display mode 2 — pet
-    KC_DISP_3,                  // LCD display mode 3 — stats
-    KC_DISP_4,                  // LCD display mode 4 — GIF carousel (press again to advance)
+    KC_DISP_2,                  // LCD display mode 2 — stats UI (press again to cycle sub-mode)
+    KC_DISP_3,                  // LCD display mode 3 — Conway's Game of Life
+    KC_DISP_4,                  // LCD display mode 4 — full-screen GIF
     KC_TT_UP,                   // Tapping term +5 ms (max 300)
     KC_TT_DN,                   // Tapping term −5 ms (min 100)
     KC_RGB_ANIM_TOGGLE,         // Toggle RGB animation override
@@ -354,6 +354,34 @@ static uint32_t ss5_deferred(uint32_t trigger_time, void *cb_arg) {
 }
 
 // ---------------------------------------------------------------------------
+// Display mode switching
+//
+// display_module_housekeeping_task_user is called every main-loop tick by the
+// HLC module. Return false = we own the surface (HLC won't redraw); true = let
+// HLC draw its stock layer/lock widget.
+//
+// Mode transitions are edge-triggered via prev_mode. Each display adds its own
+// enter/exit/tick logic below as more modes are wired in.
+// ---------------------------------------------------------------------------
+#ifdef HLC_TFT_DISPLAY
+
+static uint8_t current_display_mode = 1;  // 1 = stock HLC
+
+bool display_module_housekeeping_task_user(bool second_display) {
+    if (second_display) return true;
+
+    static uint8_t prev_mode = 0xFF;
+
+    if (prev_mode != current_display_mode) {
+        prev_mode = current_display_mode;
+    }
+
+    return true;  // mode 1: let HLC draw stock layer/lock widget
+}
+
+#endif  // HLC_TFT_DISPLAY
+
+// ---------------------------------------------------------------------------
 // Custom keycode handling
 // ---------------------------------------------------------------------------
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -387,6 +415,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_DISP_2:
         case KC_DISP_3:
         case KC_DISP_4:
+#ifdef HLC_TFT_DISPLAY
+            if (record->event.pressed) {
+                if      (keycode == KC_DISP_1) current_display_mode = 1;
+                else if (keycode == KC_DISP_2) current_display_mode = 2;
+                else if (keycode == KC_DISP_3) current_display_mode = 3;
+                else                           current_display_mode = 4;
+            }
+#endif
             return false;
 
         case KC_TT_UP:

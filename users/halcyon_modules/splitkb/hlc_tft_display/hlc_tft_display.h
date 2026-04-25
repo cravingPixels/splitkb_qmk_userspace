@@ -35,5 +35,6 @@ void init_grid(void);
 void add_cell_cluster(void);
 uint8_t get_random_color_index(void);
 void update_display(void);
+void display_invalidate_cache(void);
 void backlight_wakeup(void);
 void backlight_suspend(void);
