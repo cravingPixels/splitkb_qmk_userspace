@@ -365,6 +365,7 @@ static uint32_t ss5_deferred(uint32_t trigger_time, void *cb_arg) {
 // ---------------------------------------------------------------------------
 #ifdef HLC_TFT_DISPLAY
 
+#    include "gif_display.h"
 #    include "stats_ui.h"
 #    include "conway.h"
 
@@ -377,6 +378,13 @@ bool display_module_housekeeping_task_user(bool second_display) {
 
     if (prev_mode != current_display_mode) {
         // ── Exit old mode ──────────────────────────────────────────────────────
+        if (prev_mode == 4) {
+            gif_display_stop();
+            qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, 0, 0, 0, true);
+            qp_surface_draw(lcd_surface, lcd, 0, 0, 0);
+            qp_flush(lcd);
+            display_invalidate_cache();
+        }
         if (prev_mode == 2) {
             stats_ui_cleanup();
             qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, 0, 0, 0, true);
@@ -392,6 +400,12 @@ bool display_module_housekeeping_task_user(bool second_display) {
             display_invalidate_cache();
         }
         // ── Enter new mode ─────────────────────────────────────────────────────
+        if (current_display_mode == 4) {
+            qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, 0, 0, 0, true);
+            qp_surface_draw(lcd_surface, lcd, 0, 0, 0);
+            qp_flush(lcd);
+            gif_display_start();
+        }
         if (current_display_mode == 2) {
             stats_ui_invalidate();
         }
@@ -399,6 +413,10 @@ bool display_module_housekeeping_task_user(bool second_display) {
             conway_init();
         }
         prev_mode = current_display_mode;
+    }
+
+    if (current_display_mode == 4) {
+        return false;  // gif_display is autonomous (driven by qp_animate)
     }
 
     if (current_display_mode == 2) {
