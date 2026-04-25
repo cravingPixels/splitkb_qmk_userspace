@@ -1,7 +1,7 @@
 #pragma once
 
 // --- Version ---
-#define KEYMAP_VERSION "v1"
+#define KEYMAP_VERSION "v2"
 
 // --- Tapping ---
 // Value from Vial settings key "4": 175
