@@ -6,13 +6,14 @@
 //   tap Spc / hold MO(NUMFN) — left thumb
 //   tap Ent / hold MO(RGBNAV)— right thumb
 //
-// SS5_KEY: Cmd+Shift+5 (macOS screenshot menu) — register_mods + 30ms delay + tap_code
-//   A bare LGUI(LSFT(KC_5)) keycode arrives too fast; macOS needs the modifier
-//   state established for ~1 USB frame before the key fires.
+// SS5_KEY: OS-aware screenshot shortcut — modifier report flushed before key fires.
+//   macOS  → Cmd+Shift+5 (screenshot menu). Ctrl↔GUI swapped, so QMK sends KC_LCTL.
+//   Windows→ Win+Shift+S (Snipping Tool). Detected via OS_DETECTION at enumeration.
 // Left half compiled with HLC_TFT_DISPLAY=1, right half with HLC_ENCODER_REV2=1.
 
 #include QMK_KEYBOARD_H
 #include "rgb_layers.h"
+#include "os_detection.h"
 
 // ---------------------------------------------------------------------------
 // Custom keycodes
@@ -335,16 +336,20 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 
 // ---------------------------------------------------------------------------
 // SS5 deferred callback — runs from the main loop 50 ms after SS5_KEY press,
-// by which time the modifier-only HID report has already been flushed to macOS.
+// by which time the modifier-only HID report has already been flushed to the host.
+//
+// cb_arg points to a static ss_action_t that encodes which key+mods to fire,
+// chosen at press-time based on the detected host OS.
 // ---------------------------------------------------------------------------
+typedef struct { uint8_t mods; uint16_t keycode; } ss_action_t;
+static ss_action_t ss_action;
+
 static uint32_t ss5_deferred(uint32_t trigger_time, void *cb_arg) {
-    // tap_code uses TAP_CODE_DELAY=0 by default — press+release queue
-    // back-to-back with no yield, so macOS can receive both in the same
-    // USB frame and filter the keystroke.  Use explicit hold instead.
-    register_code(KC_5);
+    ss_action_t *a = (ss_action_t *)cb_arg;
+    register_code(a->keycode);
     wait_ms(20);
-    unregister_code(KC_5);
-    unregister_mods(MOD_BIT(KC_LCTL) | MOD_BIT(KC_LSFT));
+    unregister_code(a->keycode);
+    unregister_mods(a->mods);
     return 0;
 }
 
@@ -355,20 +360,26 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
 
         case SS5_KEY:
-            // macOS screenshot shortcuts need the modifier HID report to reach
-            // the host *before* the key report arrives.  wait_ms() inside
-            // process_record_user blocks the keyboard task, so the USB flush
-            // never happens between the two sends.
+            // Screenshot shortcut — needs modifier report flushed before the key fires.
+            // We register mods here and return; a deferred callback taps the key 50 ms
+            // later from the main loop, after USB has sent the modifier-only report.
             //
-            // Fix: register mods here and return immediately so the keyboard
-            // loop can flush the modifier report.  A deferred callback fires
-            // 50 ms later (from the main loop, after USB has sent the report)
-            // to tap KC_5 and release the mods.
+            // OS-aware:
+            //   macOS  — Cmd+Shift+5 (screenshot menu). Ctrl↔GUI is swapped in
+            //             macOS Modifier Keys for the Elora, so QMK sends KC_LCTL
+            //             for macOS to see it as Command.
+            //   Windows — Win+Shift+S (Snipping Tool overlay).
+            //   Other   — falls back to macOS behavior.
             if (record->event.pressed) {
-                // macOS has Ctrl↔GUI swapped in Modifier Keys for the Elora,
-                // so QMK must send KC_LCTL for macOS to see it as Command.
-                register_mods(MOD_BIT(KC_LCTL) | MOD_BIT(KC_LSFT));
-                defer_exec(50, ss5_deferred, NULL);
+                if (detected_host_os() == OS_WINDOWS) {
+                    ss_action.mods    = MOD_BIT(KC_LGUI) | MOD_BIT(KC_LSFT);
+                    ss_action.keycode = KC_S;
+                } else {
+                    ss_action.mods    = MOD_BIT(KC_LCTL) | MOD_BIT(KC_LSFT);
+                    ss_action.keycode = KC_5;
+                }
+                register_mods(ss_action.mods);
+                defer_exec(50, ss5_deferred, &ss_action);
             }
             return false;
 
