@@ -2,33 +2,28 @@
 
 #include "quantum.h"
 
-// --- Layer indices (must match keymap.c, match Vial export layer order) ---
+// --- Layer indices (must match keymap.c) ---
 enum layers {
     _BASE = 0,   // QWERTY + home row mods
-    _NUMFN,      // Numbers (left) + F-keys (right) — TD(1) hold
-    _RGBNAV,     // RGB ctrl (left) + Navigation (right) — TD(2) hold
-    _MODNAV,     // Modifiers + navigation — MO(3) / TD(0) hold
-    _SYM,        // Symbols — MO(4)
-    _FN,         // Function keys — MO(5)
-    _SYSTEM,     // Default layer switch + RGB Matrix ctrl — MO(6)
-    _EXTRA,      // Empty placeholder
+    _NUMFN,      // Numbers (left) + F-keys (right)  — hold Space
+    _NAV,        // Navigation + media               — hold MO·NAV (left inner) or Ent/NAV (right thumb)
+    _SYM,        // Symbols for coding               — hold MO·SYM (right inner)
+    _META,       // Keyboard settings                — hold META (left outer)
 };
 
 // --- Per-layer HSV colors — Catppuccin Mocha palette (boosted saturation) ---
 // .v is ignored at runtime; rgb_matrix_get_val() drives brightness instead.
-// h/s derived from hex: Lavender=#b4befe Yellow=#f9e2af Sky=#89dceb Mauve=#cba6f7
-//                       Green=#a6e3a1  Peach=#fab387  Red=#f38ba8  Pink=#f5c2e7
+// h/s derived from hex: Lavender=#b4befe Yellow=#f9e2af Sky=#89dceb Green=#a6e3a1
+//                       Red=#f38ba8      Peach=#fab387
 #define LAYER_COLOR_BASE    {164, 124, 0}  // Lavender
 #define LAYER_COLOR_NUMFN   { 28, 126, 0}  // Yellow
-#define LAYER_COLOR_RGBNAV  {134, 157, 0}  // Sky
-#define LAYER_COLOR_MODNAV  {189, 134, 0}  // Mauve
+#define LAYER_COLOR_NAV     {134, 157, 0}  // Sky
 #define LAYER_COLOR_SYM     { 81, 124, 0}  // Green
-#define LAYER_COLOR_FN      { 16, 167, 0}  // Peach
-#define LAYER_COLOR_SYSTEM  {243, 160, 0}  // Red
-#define LAYER_COLOR_EXTRA   {224, 104, 0}  // Pink
+#define LAYER_COLOR_META    {243, 160, 0}  // Red
+#define LAYER_COLOR_ACCENT  { 16, 167, 0}  // Peach — LT/MO layer-activating keys on BASE
 
 // --- RGB animation override ---
-// Set to true from _SYSTEM layer to let the active RGB Matrix animation run freely.
+// Set to true from META layer to let the active RGB Matrix animation run freely.
 // When false, per-layer static colors are applied via rgb_matrix_indicators_advanced_user.
 bool rgb_animation_override = false;
 
@@ -52,15 +47,12 @@ static inline bool apply_layer_rgb(uint8_t led_min, uint8_t led_max, uint8_t bri
     HSV hsv;
 
     switch (layer) {
-        case _NUMFN:   hsv = (HSV)LAYER_COLOR_NUMFN;   break;
-        case _RGBNAV:  hsv = (HSV)LAYER_COLOR_RGBNAV;  break;
-        case _MODNAV:  hsv = (HSV)LAYER_COLOR_MODNAV;  break;
-        case _SYM:     hsv = (HSV)LAYER_COLOR_SYM;     break;
-        case _FN:      hsv = (HSV)LAYER_COLOR_FN;      break;
-        case _SYSTEM:  hsv = (HSV)LAYER_COLOR_SYSTEM;  break;
-        case _EXTRA:   hsv = (HSV)LAYER_COLOR_EXTRA;   break;
-        case _BASE:    hsv = (HSV)LAYER_COLOR_BASE;    break;
-        default:       return false;
+        case _NUMFN: hsv = (HSV)LAYER_COLOR_NUMFN; break;
+        case _NAV:   hsv = (HSV)LAYER_COLOR_NAV;   break;
+        case _SYM:   hsv = (HSV)LAYER_COLOR_SYM;   break;
+        case _META:  hsv = (HSV)LAYER_COLOR_META;   break;
+        case _BASE:  hsv = (HSV)LAYER_COLOR_BASE;   break;
+        default:     return false;
     }
 
     // Combine user brightness (RM_VALU/RM_VALD) with the idle-dim multiplier.
@@ -86,7 +78,7 @@ static inline bool apply_layer_rgb(uint8_t led_min, uint8_t led_max, uint8_t bri
     //   LEFT  side — col6=outermost(far-left)  …  col1=innermost(near-center)
     //                col0 only on bottom row = Caps (inner-most, near split center)
     //   RIGHT side — col1=innermost(near-center) …  col6=outermost(far-right)
-    //                col0 only on bottom row = MO(_FN) (inner-most, near split center)
+    //                col0 only on bottom row = Del (inner-most, near split center)
     //
     // LED order follows PCB wiring chain (bottom-up, not row order) — so LEDs within
     // the same row may be non-contiguous (e.g. LED 48 is bottom-row but wired between
@@ -101,12 +93,12 @@ static inline bool apply_layer_rgb(uint8_t led_min, uint8_t led_max, uint8_t bri
         [ 5] = {.row = 255, .col = 0},
 
         // ── Left thumb row (row 4) + bottom-corner key (row 3 col5) ──────────────
-        // Physical order: MO3(inner) … MO_SYS(outer), with BSpc corner wired 2nd
-        [ 6] = {.row =  4, .col = 0},   // L thumb inner  → MO(_MODNAV)
+        // Physical order: MO3(inner) … MO_META(outer), with BSpc corner wired 2nd
+        [ 6] = {.row =  4, .col = 0},   // L thumb inner  → MO(_NAV)
         [ 7] = {.row =  4, .col = 5},   // L bottom corner→ BSpc          ← between main & thumb physically
         [ 8] = {.row =  4, .col = 1},   // L thumb        → MEH/BSpc
         [ 9] = {.row =  4, .col = 2},   // L thumb        → Spc/MO(_NUMFN)
-        [10] = {.row =  4, .col = 4},   // L thumb outer  → MO(_SYSTEM)
+        [10] = {.row =  4, .col = 4},   // L thumb outer  → MO(_META)
         [12] = {.row =  4, .col = 3},   // L thumb        → Hypr
 
         // ── Left bottom row (row 3) ───────────────────────────────────────────────
@@ -155,17 +147,17 @@ static inline bool apply_layer_rgb(uint8_t led_min, uint8_t led_max, uint8_t bri
         [42] = {.row = 255, .col = 0},
 
         // ── Right thumb row (row 10) + bottom-corner key (row 9 col5) ─────────────
-        // LED 48 (MO_FN) is bottom-row but wired here in the PCB chain
+        // LED 48 (Del) is bottom-row but wired here in the PCB chain
         [43] = {.row = 10, .col = 0},   // R thumb inner  → MO(_SYM)
         [44] = {.row = 10, .col = 5},   // R bottom corner→ SS5 (M0_MACRO) ← between main & thumb physically
         [45] = {.row = 10, .col = 1},   // R thumb        → MEH/Del
-        [46] = {.row = 10, .col = 2},   // R thumb        → Ent/MO(_RGBNAV)
+        [46] = {.row = 10, .col = 2},   // R thumb        → Ent/MO(_NAV)
         [47] = {.row = 10, .col = 4},   // R thumb outer  → App
-        [48] = {.row =  9, .col = 0},   // R bottom inner → MO(_FN)        ← wired mid-cluster in PCB chain
+        [48] = {.row =  9, .col = 0},   // R bottom inner → Del             ← wired mid-cluster in PCB chain
         [49] = {.row = 10, .col = 3},   // R thumb        → Hypr
 
         // ── Right bottom row (row 9) ──────────────────────────────────────────────
-        // col0=MO_FN(inner, near split center) … col6=RSft(outer)
+        // col0=Del(inner, near split center) … col6=RSft(outer)
         [50] = {.row =  9, .col = 1},   // R bottom       → N
         [51] = {.row =  9, .col = 2},   // R bottom       → M
         [52] = {.row =  9, .col = 3},   // R bottom       → ,
@@ -180,7 +172,7 @@ static inline bool apply_layer_rgb(uint8_t led_min, uint8_t led_max, uint8_t bri
         [58] = {.row =  8, .col = 3},   // R home         → Sft/K
         [59] = {.row =  8, .col = 4},   // R home         → Alt/L
         [60] = {.row =  8, .col = 5},   // R home         → GUI/;
-        [61] = {.row =  8, .col = 6},   // R home outer   → '/MO(_MODNAV)
+        [61] = {.row =  8, .col = 6},   // R home outer   → '
 
         // ── Right 2nd row (row 7) ─────────────────────────────────────────────────
         // col1=Y(inner) … col6=BSpc(outer)
@@ -207,6 +199,22 @@ static inline bool apply_layer_rgb(uint8_t led_min, uint8_t led_max, uint8_t bri
         uint16_t kc = keymap_key_to_keycode(layer, pos);
         if (kc == KC_TRNS || kc == KC_NO) {
             rgb_matrix_set_color(led, 0, 0, 0);
+        }
+    }
+
+    // On BASE: paint LT() and MO() layer-activating keys in Peach accent.
+    // This makes the thumb cluster layer keys visually distinct from regular keys.
+    if (layer == _BASE) {
+        HSV accent_hsv  = (HSV)LAYER_COLOR_ACCENT;
+        accent_hsv.v    = hsv.v;
+        RGB accent_rgb  = hsv_to_rgb(accent_hsv);
+        for (uint8_t led = led_min; led < led_max; led++) {
+            keypos_t pos = led_to_keypos[led];
+            if (pos.row == 255) continue;
+            uint16_t kc = keymap_key_to_keycode(_BASE, pos);
+            if (IS_QK_LAYER_TAP(kc) || IS_QK_MOMENTARY(kc)) {
+                rgb_matrix_set_color(led, accent_rgb.r, accent_rgb.g, accent_rgb.b);
+            }
         }
     }
 
