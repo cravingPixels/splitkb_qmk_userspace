@@ -15,7 +15,6 @@ Custom QMK firmware for the [splitkb Halcyon Elora V2](https://splitkb.com/produ
 **Display — left half**
 - ST7789 TFT LCD, 135×240 px, 1.14", 262k colors
 - LVGL-compatible via QMK Quantum Painter
-- Driven via SPI with a 16-bit RGB565 surface buffer
 - Display modes (switchable at runtime from the SYSTEM layer):
   - `dsp1` — stock HLC widget: current layer number + Caps/Num/Scroll lock
   - `dsp4` — animated GIF carousel
