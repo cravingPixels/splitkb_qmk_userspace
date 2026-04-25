@@ -120,7 +120,7 @@ QMK_HOME   = Path(os.environ.get("QMK_HOME",   "~/.local/share/qmk_firmware")).e
 KEYMAP_DIR = Path(os.environ.get("KEYMAP_DIR", "")).expanduser()
 ASSETS_DIR = Path(os.environ.get("ASSETS_DIR", "")).expanduser()
 BUILD_DIR  = QMK_HOME / ".build"
-FLASH_SIZE = 2 * 1024 * 1024  # RP2040: 2 MB
+FLASH_SIZE = 16 * 1024 * 1024  # AT25SF128A: 16 MB (128 Mbit)
 
 targets = {
     "left":  os.environ.get("TARGET_LEFT",  "splitkb_halcyon_elora_rev2_cravingpixels_left"),

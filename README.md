@@ -2,7 +2,9 @@
 
 Custom QMK firmware for the [splitkb Halcyon Elora V2](https://splitkb.com/products/halcyon-elora) split keyboard.
 
-- RP2040 MCU, per-key RGB + underglow
+- RP2040 MCU, 16 MB flash (AT25SF128A)
+- Per-key RGB: SK6812MINI-E (one per switch)
+- Underglow RGB: 6× WS2812B per half
 - 135×240 ST7789 TFT LCD — left half
 - Rotary encoder — right half
 - Keymap: `cravingpixels` under `keyboards/splitkb/halcyon/elora/keymaps/cravingpixels/`
