@@ -13,5 +13,6 @@ ifdef HLC_TFT_DISPLAY
 SRC += gif_wpm.qgf.c
 SRC += FiraCodeNerdFontMono-Regular-24.qff.c
 SRC += stats_ui.c
+SRC += conway.c
 endif
 
