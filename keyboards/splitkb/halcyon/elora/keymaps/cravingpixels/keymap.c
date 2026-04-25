@@ -410,7 +410,16 @@ bool display_module_housekeeping_task_user(bool second_display) {
     static uint8_t prev_mode = 0xFF;
 
     if (prev_mode != current_display_mode) {
-        if (prev_mode == 4) gif_stop();
+        if (prev_mode == 4) {
+            gif_stop();
+            // Clear GIF pixels from the surface and flush so the LCD shows black.
+            // Then invalidate HLC's cached state so update_display() repaints the
+            // layer number and lock indicators unconditionally on the next frame.
+            qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, 0, 0, 0, true);
+            qp_surface_draw(lcd_surface, lcd, 0, 0, 0);
+            qp_flush(lcd);
+            display_invalidate_cache();
+        }
         if (current_display_mode == 4) {
             // Clear the surface so no HLC stock pixels bleed through, then start the GIF.
             qp_rect(lcd_surface, 0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1, 0, 0, 0, true);
