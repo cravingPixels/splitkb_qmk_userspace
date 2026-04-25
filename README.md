@@ -2,12 +2,34 @@
 
 Custom QMK firmware for the [splitkb Halcyon Elora V2](https://splitkb.com/products/halcyon-elora) split keyboard.
 
-- RP2040 MCU, 16 MB flash (AT25SF128A)
-- Per-key RGB: SK6812MINI-E (one per switch)
-- Underglow RGB: 6× WS2812B per half
-- 135×240 ST7789 TFT LCD — left half
-- Rotary encoder — right half
-- Keymap: `cravingpixels` under `keyboards/splitkb/halcyon/elora/keymaps/cravingpixels/`
+**Keymap:** `cravingpixels` under `keyboards/splitkb/halcyon/elora/keymaps/cravingpixels/`
+
+---
+
+## Hardware
+
+**MCU / Flash**
+- RP2040 MCU
+- 16 MB flash (AT25SF128A, 128 Mbit)
+
+**Display — left half**
+- ST7789 TFT LCD, 135×240 px, 1.14", 262k colors
+- LVGL-compatible via QMK Quantum Painter
+- Driven via SPI with a 16-bit RGB565 surface buffer
+- Display modes (switchable at runtime from the SYSTEM layer):
+  - `dsp1` — stock HLC widget: current layer number + Caps/Num/Scroll lock
+  - `dsp4` — animated GIF carousel
+  - Conway's Game of Life (background animation, always on)
+
+**RGB / LEDs**
+- Per-key RGB: SK6812MINI-E (one per switch, per half)
+- Underglow: 6× WS2812B per half
+- Per-layer static colors (Catppuccin Mocha palette)
+
+**Encoder — right half**
+- ALPS EC12 rotary encoder with push-button action
+- Rotate: volume / page scroll (layer-dependent)
+- Press: mapped to `KC_MUTE` on BASE layer (configurable per layer)
 
 ---
 
@@ -31,9 +53,10 @@ mise run compile-right    # right only (encoder)
 mise run flash-left       # compile + flash left  — double-tap reset first
 mise run flash-right      # compile + flash right — double-tap reset first
 mise run convert          # PNG/GIF → QGF assets
+mise run flash-stats      # show firmware flash usage per side
 ```
 
-Compiled `.uf2` files land in `~/.local/share/qmk_firmware/`.
+Compiled `.uf2` files land in `~/.local/share/qmk_firmware/.build/`.
 Preferred flashing method: drag-drop the `.uf2` onto the `RPI-RP2` drive.
 
 ---
