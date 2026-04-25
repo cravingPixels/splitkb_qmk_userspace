@@ -14,6 +14,12 @@
 #include QMK_KEYBOARD_H
 #include "rgb_layers.h"
 #include "os_detection.h"
+#ifdef HLC_TFT_DISPLAY
+#    include "users/halcyon_modules/splitkb/hlc_tft_display/hlc_tft_display.h"
+#    include "gif_display.h"
+#    include "stats_ui.h"
+#    include "conway.h"
+#endif
 
 // ---------------------------------------------------------------------------
 // Custom keycodes
@@ -369,7 +375,7 @@ static uint32_t ss5_deferred(uint32_t trigger_time, void *cb_arg) {
 #    include "stats_ui.h"
 #    include "conway.h"
 
-static uint8_t current_display_mode = 1;  // 1 = stock HLC
+static uint8_t current_display_mode = 2;  // 1 = stock HLC, 2 = stats (default)
 
 bool display_module_housekeeping_task_user(bool second_display) {
     if (second_display) return true;
@@ -407,7 +413,7 @@ bool display_module_housekeeping_task_user(bool second_display) {
             gif_display_start();
         }
         if (current_display_mode == 2) {
-            stats_ui_invalidate();
+            stats_ui_invalidate_gif();
         }
         if (current_display_mode == 3) {
             conway_init();
