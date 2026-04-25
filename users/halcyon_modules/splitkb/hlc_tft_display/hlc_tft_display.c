@@ -283,9 +283,14 @@ bool module_post_init_kb(void) {
 
 // Called from halcyon.c
 bool display_module_housekeeping_task_kb(bool second_display) {
-    if(!display_module_housekeeping_task_user(second_display)) { return false; }
+    // Call user hook.  Returns true  = "let HLC draw its default content".
+    //                  Returns false = "user owns this display, skip HLC rendering".
+    // Either way we ALWAYS flush so user-drawn content reaches hardware.
+    bool hlc_should_draw = display_module_housekeeping_task_user(second_display);
 
     if(second_display) {
+        if(!hlc_should_draw) { return false; }
+
         static uint32_t last_draw = 0;
         static bool second_display_set = false;
         static uint32_t previous_matrix_activity_time = 0;
@@ -311,12 +316,13 @@ bool display_module_housekeeping_task_kb(bool second_display) {
         }
     }
 
-    // Update display information (layers, numlock, etc.)
-    if(!second_display) {
+    // Update HLC display information (layer number, lock indicators) only when
+    // the user hook did NOT take over — prevents overwriting custom display modes.
+    if(!second_display && hlc_should_draw) {
         update_display();
     }
 
-    // Move surface to lcd
+    // Always flush regardless of who drew.
     qp_surface_draw(lcd_surface, lcd, 0, 0, 0);
     qp_flush(lcd);
 
