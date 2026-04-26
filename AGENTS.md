@@ -7,12 +7,18 @@
 | Feature | State | Notes |
 |---|---|---|
 | BASE layer | done | QWERTY + home-row mods |
-| All layers (1-6) | done | keycodes assigned, verified against elora.vil |
-| Per-layer RGB colors | done | Catppuccin Mocha, saturation boosted |
+| All layers (BASE/NUMFN/NAV/SYM/META) | done | 5 layers, reorganized from original 8 |
+| Per-layer RGB colors | done | Catppuccin Mocha; LT/MO accent keys painted Peach on BASE |
 | Per-key LED dimming | done | blacks out KC_TRNS/KC_NO keys per layer |
-| RGB brightness controls | done | RM_VALD/RM_VALU work via rgb_matrix_get_val() |
-| LCD stock display | done | uses default HLC layer/WPM/modifier view |
-| LCD display modes (pet/stats/ambient) | planned | architecture in display.c, not yet implemented |
+| RGB brightness controls | done | RM_VALD/RM_VALU via rgb_matrix_get_val() |
+| Animation override | done | AniTgl synced to slave via split RPC; 4 presets (Breathe/Chevron/Heatmap/Splash) |
+| Animation speed control | done | RM_SPDU/RM_SPDD keys + encoder in META; default 64/255 |
+| LCD stock display | done | mode 1 — HLC default layer/WPM/modifier widget |
+| LCD stats display | done | mode 2 — layer name, lock indicators, TT, LED val, WPM/GIF/marquee |
+| LCD Conway's Game of Life | done | mode 3 |
+| LCD full-screen GIF | done | mode 4 — shiny mew sleeping GIF |
+| LCD pet/Tamagotchi mode | planned | sprites not started |
+| LCD ambient/time-of-day mode | planned | needs macOS time-sync daemon (Raw HID) |
 | Time sync daemon (macOS → Raw HID) | planned | needed for ambient mode |
 | Tapping term tuning | pending | TAPPING_TERM=175ms, needs real-world testing |
 
@@ -35,13 +41,45 @@ RP2040 MCU, per-key RGB + underglow, 135×240 ST7789 TFT LCD (left half), rotary
 Everything under `keyboards/splitkb/halcyon/elora/keymaps/cravingpixels/` is the keymap:
 
 ```
-keymap.c      — layers, macros, tap dance, callbacks
-config.h      — tapping term, RGB settings, HID config
-rules.mk      — enabled features
-rgb_layers.h  — per-layer colors + per-key LED dimming
-display.c     — TFT LCD rendering (left half only)
-*.qgf.*       — converted image/animation assets (build artifacts, not committed)
+keymap.c        — layers, custom keycodes, split sync, RGB callbacks
+config.h        — tapping term, RGB settings, HID config, split transaction IDs
+rules.mk        — enabled features
+rgb_layers.h    — layer enum, Catppuccin HSV colors, per-key LED dimming, animation override
+stats_ui.c      — LCD stats display (mode 2): layer name/color, locks, TT, LED val, WPM
+conway.c        — LCD Conway's Game of Life (mode 3)
+gif_display.c   — LCD full-screen GIF (mode 4)
+*.qgf.* *.qff.* — converted image/font assets (build artifacts, not committed)
 ```
+
+### Layers
+
+| # | Name | Activation | Purpose |
+|---|------|-----------|---------|
+| 0 | BASE | — | QWERTY + home-row mods (GUI/Alt/Sft/Ctl) |
+| 1 | NUMFN | hold Space | Numbers left, F-keys right, Undo/Cut/Copy/Paste at Z/X/C/V |
+| 2 | NAV | hold MO·NAV (left inner thumb) or Ent/NAV (right thumb) | Mods + media left, arrows + Home/PgUp/PgDn/End right |
+| 3 | SYM | hold SYM (right inner thumb) | Shifted symbols left mirroring NUMFN, brackets right |
+| 4 | META | hold META (left outer thumb) | Display modes, tapping term, RGB/animation controls |
+
+### Encoder map (Enc3 = right outer, main dial)
+
+| Layer | Enc3 action |
+|-------|------------|
+| BASE | Volume ↕ |
+| NUMFN | LED brightness ↕ |
+| NAV | Page up/down |
+| SYM | Volume ↕ |
+| META | Animation speed ↕ |
+
+### META layer RGB controls (right side)
+
+```
+Row 1:       | Brth | Chvr | Heat | Spls |      |
+Home row: Ani| Hue+ | Val+ | Spd+ |      |      |
+Bottom:       | Hue- | Val- | Spd- |      |      |
+```
+Columns aligned: each animation key sits above its fine-tune controls.
+`AniTgl` (H): off = static Catppuccin layer colors; on = animation runs freely on both halves.
 
 `users/halcyon_modules/` is splitkb's shared module code — do not touch it.
 
@@ -202,7 +240,7 @@ Right: 37-42 = underglow
        43-73 = key LEDs (thumb row first, then bottom→top)
 ```
 
-LED 48 (right bottom inner, `MO(_FN)`) is wired mid-thumb-cluster in the PCB chain
+LED 48 (right bottom inner, `KC_DEL` on BASE) is wired mid-thumb-cluster in the PCB chain
 because it sits physically between the two clusters.
 
 #### Per-Layer Colors
@@ -313,7 +351,7 @@ LEFT  side: col0=innermost (near center)  …  col6=outermost (far left)
 RIGHT side: col0=innermost (near center)  …  col6=outermost (far right)
 ```
 
-col0 only exists on the bottom row (left=Caps, right=MO(_FN)) and thumb row.
+col0 only exists on the bottom row (left=Caps, right=Del) and thumb row.
 Top/2nd/home rows use only cols 1-6.
 
 ### `user.overlay_dir` — Required Once Per Machine
@@ -333,6 +371,16 @@ this is the first thing to check (`qmk config user.overlay_dir`).
 The file uses `static inline` and defines `rgb_animation_override` as a non-`extern`
 global. Including it from more than one `.c` file will cause multiple-definition linker
 errors. It is included only from `keymap.c`.
+
+### Animation Override — Split Sync
+
+Each half runs its own `rgb_matrix_indicators_advanced_user` (split_count=[37,37]).
+`rgb_animation_override` must be synced from master to slave or the slave always
+shows static layer colors regardless of AniTgl state.
+
+Sync is implemented via `SPLIT_TRANSACTION_IDS_USER USER_SYNC_RGB_ANIM` (config.h),
+registered in `keyboard_post_init_user`, and pushed in `housekeeping_task_user`
+whenever the value changes. Do not remove this or AniTgl will only work on the left half.
 
 ## References
 
