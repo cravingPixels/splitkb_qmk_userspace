@@ -1,4 +1,4 @@
-// Halcyon Elora rev2 — custom keymap (cravingpixels v3)
+// Halcyon Elora rev2 — custom keymap (cravingpixels v4)
 //
 // Layers: BASE · NUMFN · NAV · SYM · META
 //
@@ -159,30 +159,31 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * Layer 4 — META: Keyboard settings   [hold META]
  *
  * AniTgl: off = per-layer Catppuccin static colors; on = animation runs freely.
- * Hue/Val only affect the animation (static layer colors are hardcoded).
+ * Hue/Val/Spd only affect the animation (static layer colors are hardcoded).
+ * Columns aligned: Brth/Hue+/Hue-  Chvr/Val+/Val-  Heat/Spd+/Spd-
  *
  * ,-------------------------------------------.                              ,-------------------------------------------.
  * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
  * |        | TT-  | TT+  |      |      |      |                              |      | Brth | Chvr | Heat | Spls |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | EEClr  |Dsp 1 |Dsp 2 |Dsp 3 |Dsp 4 |RMTog|                              |AniTgl| Hue+ | Val+ |      |      |        |
+ * | EEClr  |Dsp 1 |Dsp 2 |Dsp 3 |Dsp 4 |RMTog|                              |AniTgl| Hue+ | Val+ | Spd+ |      |        |
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * |        |      |      |      |      |      |      |      |  |      |      |      | Hue- | Val- |      |      |        |
+ * |        |      |      |      |      |      |      |      |  |      |      |      | Hue- | Val- | Spd- |      |        |
  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  * ,-----------------------------------.                                              ,-----------------------------------.
- * | Hue- |      |       |      |      |                                              | Hue+ |      |       |      |      |
+ * | Spd- |      |       |      |      |                                              | Spd+ |      |       |      |      |
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_META] = LAYOUT_elora_hlc(
       KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,                                   KC_NO,               KC_NO,        KC_NO,        KC_NO,        KC_NO,  KC_NO,
       KC_NO,           KC_TT_DN,  KC_TT_UP,  KC_NO,     KC_NO,     KC_NO,                                   KC_NO,               KC_ANIM_BREATHE, KC_ANIM_CHEVRON, KC_ANIM_HEATMAP, KC_ANIM_SPLASH, KC_NO,
-      QK_CLEAR_EEPROM, KC_DISP_1, KC_DISP_2, KC_DISP_3, KC_DISP_4, RM_TOGG,                                 KC_RGB_ANIM_TOGGLE,  RM_HUEU,      RM_VALU,      KC_NO,        KC_NO,  KC_NO,
-      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,  KC_NO, KC_NO,  KC_NO,  KC_NO,   KC_NO,               RM_HUED,      RM_VALD,      KC_NO,        KC_NO,  KC_NO,
+      QK_CLEAR_EEPROM, KC_DISP_1, KC_DISP_2, KC_DISP_3, KC_DISP_4, RM_TOGG,                                 KC_RGB_ANIM_TOGGLE,  RM_HUEU,      RM_VALU,      RM_SPDU,      KC_NO,  KC_NO,
+      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,  KC_NO, KC_NO,  KC_NO,  KC_NO,   KC_NO,               RM_HUED,      RM_VALD,      RM_SPDD,      KC_NO,  KC_NO,
       KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,                    KC_NO,  KC_NO,            KC_NO,               KC_NO,        KC_NO,
-      RM_HUED,         KC_NO,     KC_NO,     KC_NO,     KC_NO,                    RM_HUEU, KC_NO,           KC_NO,               KC_NO,        KC_NO
+      RM_SPDD,         KC_NO,     KC_NO,     KC_NO,     KC_NO,                    RM_SPDU, KC_NO,           KC_NO,               KC_NO,        KC_NO
     ),
 };
 // clang-format on
@@ -194,13 +195,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #ifdef ENCODER_MAP_ENABLE
 // Enc0=left-outer  Enc1=left-inner  Enc2=right-inner  Enc3=right-outer (main dial)
 // Left thumb activates layers; right hand turns the dial.
-// BASE=volume  NUMFN(Space)=LED brightness  NAV(MO·NAV)=page  META(META)=hue
+// BASE=volume  NUMFN(Space)=LED brightness  NAV(MO·NAV)=page  META(META)=anim speed
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
     [_BASE]  = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
     [_NUMFN] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(RM_VALD, RM_VALU) },
     [_NAV]   = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_PGUP, KC_PGDN) },
     [_SYM]   = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
-    [_META]  = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(RM_HUED, RM_HUEU) },
+    [_META]  = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(RM_SPDD, RM_SPDU) },
 };
 #endif
 
@@ -479,6 +480,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_ANIM_BREATHE:
             if (record->event.pressed) {
                 rgb_animation_override = true;
+                // Breathing uses rgb_matrix_config.hsv for its color. Default
+                // saturation is 0 after EEPROM reset → white. Pre-set Lavender
+                // so it looks colored immediately; hue can be shifted with Hue±.
+                rgb_matrix_sethsv_noeeprom(164, 200, rgb_matrix_get_val());
                 rgb_matrix_mode_noeeprom(RGB_MATRIX_BREATHING);
             }
             return false;
