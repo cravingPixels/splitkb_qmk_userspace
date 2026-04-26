@@ -33,7 +33,11 @@ enum custom_keycodes {
     KC_DISP_4,                  // LCD display mode 4 — full-screen GIF
     KC_TT_UP,                   // Tapping term +5 ms (max 300)
     KC_TT_DN,                   // Tapping term −5 ms (min 100)
-    KC_RGB_ANIM_TOGGLE,         // Toggle RGB animation override
+    KC_RGB_ANIM_TOGGLE,         // Toggle RGB animation override (static layer colors ↔ animation)
+    KC_ANIM_BREATHE,            // Animation: Breathing
+    KC_ANIM_CHEVRON,            // Animation: Rainbow Moving Chevron
+    KC_ANIM_HEATMAP,            // Animation: Typing Heatmap
+    KC_ANIM_SPLASH,             // Animation: Splash (reactive)
 };
 
 // ---------------------------------------------------------------------------
@@ -154,10 +158,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /*
  * Layer 4 — META: Keyboard settings   [hold META]
  *
+ * AniTgl: off = per-layer Catppuccin static colors; on = animation runs freely.
+ * Hue/Val only affect the animation (static layer colors are hardcoded).
+ *
  * ,-------------------------------------------.                              ,-------------------------------------------.
  * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |        | TT-  | TT+  |      |      |      |                              |      |      |      |      |      |        |
+ * |        | TT-  | TT+  |      |      |      |                              | Brth | Chvr | Heat | Spls |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
  * | EEClr  |Dsp 1 |Dsp 2 |Dsp 3 |Dsp 4 |RMTog|                              |AniTgl| Hue+ | Val+ |      |      |        |
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
@@ -170,12 +177,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_META] = LAYOUT_elora_hlc(
-      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,                                   KC_NO,             KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      KC_NO,           KC_TT_DN,  KC_TT_UP,  KC_NO,     KC_NO,     KC_NO,                                   KC_NO,             KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      QK_CLEAR_EEPROM, KC_DISP_1, KC_DISP_2, KC_DISP_3, KC_DISP_4, RM_TOGG,                                 KC_RGB_ANIM_TOGGLE,RM_HUEU, RM_VALU, KC_NO,   KC_NO,   KC_NO,
-      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,  KC_NO, KC_NO,  KC_NO,  KC_NO,   KC_NO,             RM_HUED, RM_VALD, KC_NO,   KC_NO,   KC_NO,
-      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,                    KC_NO,  KC_NO,            KC_NO,             KC_NO,   KC_NO,
-      RM_HUED,         KC_NO,     KC_NO,     KC_NO,     KC_NO,                    RM_HUEU, KC_NO,           KC_NO,             KC_NO,   KC_NO
+      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,                                   KC_NO,               KC_NO,        KC_NO,        KC_NO,        KC_NO,  KC_NO,
+      KC_NO,           KC_TT_DN,  KC_TT_UP,  KC_NO,     KC_NO,     KC_NO,                                   KC_ANIM_BREATHE,     KC_ANIM_CHEVRON, KC_ANIM_HEATMAP, KC_ANIM_SPLASH, KC_NO, KC_NO,
+      QK_CLEAR_EEPROM, KC_DISP_1, KC_DISP_2, KC_DISP_3, KC_DISP_4, RM_TOGG,                                 KC_RGB_ANIM_TOGGLE,  RM_HUEU,      RM_VALU,      KC_NO,        KC_NO,  KC_NO,
+      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,  KC_NO, KC_NO,  KC_NO,  KC_NO,   KC_NO,               RM_HUED,      RM_VALD,      KC_NO,        KC_NO,  KC_NO,
+      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,                    KC_NO,  KC_NO,            KC_NO,               KC_NO,        KC_NO,
+      RM_HUED,         KC_NO,     KC_NO,     KC_NO,     KC_NO,                    RM_HUEU, KC_NO,           KC_NO,               KC_NO,        KC_NO
     ),
 };
 // clang-format on
@@ -464,6 +471,33 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_RGB_ANIM_TOGGLE:
             if (record->event.pressed) {
                 rgb_animation_override = !rgb_animation_override;
+            }
+            return false;
+
+        // Animation preset keys — enable override and switch to the chosen mode.
+        // rgb_matrix_mode_noeeprom so rapid switching doesn't hammer flash.
+        case KC_ANIM_BREATHE:
+            if (record->event.pressed) {
+                rgb_animation_override = true;
+                rgb_matrix_mode_noeeprom(RGB_MATRIX_BREATHING);
+            }
+            return false;
+        case KC_ANIM_CHEVRON:
+            if (record->event.pressed) {
+                rgb_animation_override = true;
+                rgb_matrix_mode_noeeprom(RGB_MATRIX_RAINBOW_MOVING_CHEVRON);
+            }
+            return false;
+        case KC_ANIM_HEATMAP:
+            if (record->event.pressed) {
+                rgb_animation_override = true;
+                rgb_matrix_mode_noeeprom(RGB_MATRIX_TYPING_HEATMAP);
+            }
+            return false;
+        case KC_ANIM_SPLASH:
+            if (record->event.pressed) {
+                rgb_animation_override = true;
+                rgb_matrix_mode_noeeprom(RGB_MATRIX_SPLASH);
             }
             return false;
     }
