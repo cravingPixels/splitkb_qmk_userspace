@@ -164,7 +164,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * ,-------------------------------------------.                              ,-------------------------------------------.
  * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |        | TT-  | TT+  |      |      |      |                              | Brth | Chvr | Heat | Spls |      |        |
+ * |        | TT-  | TT+  |      |      |      |                              |      | Brth | Chvr | Heat | Spls |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
  * | EEClr  |Dsp 1 |Dsp 2 |Dsp 3 |Dsp 4 |RMTog|                              |AniTgl| Hue+ | Val+ |      |      |        |
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
@@ -178,7 +178,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
     [_META] = LAYOUT_elora_hlc(
       KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,                                   KC_NO,               KC_NO,        KC_NO,        KC_NO,        KC_NO,  KC_NO,
-      KC_NO,           KC_TT_DN,  KC_TT_UP,  KC_NO,     KC_NO,     KC_NO,                                   KC_ANIM_BREATHE,     KC_ANIM_CHEVRON, KC_ANIM_HEATMAP, KC_ANIM_SPLASH, KC_NO, KC_NO,
+      KC_NO,           KC_TT_DN,  KC_TT_UP,  KC_NO,     KC_NO,     KC_NO,                                   KC_NO,               KC_ANIM_BREATHE, KC_ANIM_CHEVRON, KC_ANIM_HEATMAP, KC_ANIM_SPLASH, KC_NO,
       QK_CLEAR_EEPROM, KC_DISP_1, KC_DISP_2, KC_DISP_3, KC_DISP_4, RM_TOGG,                                 KC_RGB_ANIM_TOGGLE,  RM_HUEU,      RM_VALU,      KC_NO,        KC_NO,  KC_NO,
       KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,  KC_NO, KC_NO,  KC_NO,  KC_NO,   KC_NO,               RM_HUED,      RM_VALD,      KC_NO,        KC_NO,  KC_NO,
       KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,                    KC_NO,  KC_NO,            KC_NO,               KC_NO,        KC_NO,
