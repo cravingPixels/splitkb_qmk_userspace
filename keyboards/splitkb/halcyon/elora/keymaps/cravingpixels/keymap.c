@@ -1,4 +1,4 @@
-// Halcyon Elora rev2 — custom keymap (cravingpixels v4)
+// Halcyon Elora rev2 — custom keymap (cravingpixels v5)
 //
 // Layers: BASE · NUMFN · NAV · SYM · META
 //
@@ -38,6 +38,8 @@ enum custom_keycodes {
     KC_ANIM_CHEVRON,            // Animation: Rainbow Moving Chevron
     KC_ANIM_HEATMAP,            // Animation: Typing Heatmap
     KC_ANIM_SPLASH,             // Animation: Splash (reactive)
+    KC_SHOW_METRICS,            // Cycle metric toast: TT → LED → SPD → HUE → off
+    KC_HUE_RESET,               // Reset layer palette hue offset to 0
 };
 
 // ---------------------------------------------------------------------------
@@ -109,7 +111,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
  * |        |      |      |      | Next |      |                              | Home | PgDn | PgUp | End  |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |        | GUI  | Alt  | Sft  | Ctl  | Play |                              | Left | Down |  Up  | Rght |      |        |
+ * |        | GUI  | Alt  | Sft  | Ctl  | Play |                              | Left | Down |  Up  | Rght |  <   |   >    |
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
  * |        |      |      |      | Prev |      |      |      |  |      |      |      |      | BSpc | Del  |      |        |
  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
@@ -122,7 +124,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_NAV] = LAYOUT_elora_hlc(
       KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                                KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,  KC_NO,
       KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_MNXT, KC_NO,                                KC_HOME, KC_PGDN, KC_PGUP, KC_END,  KC_NO,  KC_NO,
-      KC_NO,   KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, KC_MPLY,                              KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,KC_NO,  KC_NO,
+      KC_NO,   KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, KC_MPLY,                              KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,LSFT(KC_COMMA), LSFT(KC_DOT),
       KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_MPRV, KC_NO,  KC_NO, KC_NO,  KC_NO, KC_NO, KC_NO,   KC_NO,   KC_BSPC, KC_DEL,  KC_NO,  KC_NO,
       KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                   KC_NO,  KC_NO,         KC_NO,   KC_NO,   KC_NO,
       KC_PGUP, KC_NO,   KC_NO,   KC_NO,   KC_NO,                   KC_PGDN, KC_NO,        KC_NO,   KC_NO,   KC_NO
@@ -159,31 +161,34 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * Layer 4 — META: Keyboard settings   [hold META]
  *
  * AniTgl: off = per-layer Catppuccin static colors; on = animation runs freely.
- * Hue/Val/Spd only affect the animation (static layer colors are hardcoded).
+ * Encoder 3 (META): hue encoder — shifts animation hue (anim mode) or
+ *   layer palette hue offset (static mode). Click resets palette hue to 0.
+ * Hue± also work as grid keys. Val± / Spd± adjust brightness / animation speed.
  * Columns aligned: Brth/Hue+/Hue-  Chvr/Val+/Val-  Heat/Spd+/Spd-
+ * Mtrc: cycle LCD metric toast (TT→LED→SPD→HUE→off).
  *
  * ,-------------------------------------------.                              ,-------------------------------------------.
  * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |        | TT-  | TT+  |      |      |      |                              |      | Brth | Chvr | Heat | Spls |        |
+ * |        | TT-  | TT+  |      | Mtrc |      |                              |      | Brth | Chvr | Heat | Spls |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | EEClr  |Dsp 1 |Dsp 2 |Dsp 3 |Dsp 4 |RMTog|                              |AniTgl| Hue+ | Val+ | Spd+ |      |        |
+ * | EEClr  |Dsp 1 |Dsp 2 |Dsp 3 |Dsp 4 |RMTog|                              |AniTgl| Hue+ | Val+ | Spd+ |HueRst|        |
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
  * |        |      |      |      |      |      |      |      |  |      |      |      | Hue- | Val- | Spd- |      |        |
  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  * ,-----------------------------------.                                              ,-----------------------------------.
- * | Spd- |      |       |      |      |                                              | Spd+ |      |       |      |      |
+ * | Hue- |      |       |      |      |                                              | HRst |      |       |      |      |
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_META] = LAYOUT_elora_hlc(
-      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,                                   KC_NO,               KC_NO,        KC_NO,        KC_NO,        KC_NO,  KC_NO,
-      KC_NO,           KC_TT_DN,  KC_TT_UP,  KC_NO,     KC_NO,     KC_NO,                                   KC_NO,               KC_ANIM_BREATHE, KC_ANIM_CHEVRON, KC_ANIM_HEATMAP, KC_ANIM_SPLASH, KC_NO,
-      QK_CLEAR_EEPROM, KC_DISP_1, KC_DISP_2, KC_DISP_3, KC_DISP_4, RM_TOGG,                                 KC_RGB_ANIM_TOGGLE,  RM_HUEU,      RM_VALU,      RM_SPDU,      KC_NO,  KC_NO,
-      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,  KC_NO, KC_NO,  KC_NO,  KC_NO,   KC_NO,               RM_HUED,      RM_VALD,      RM_SPDD,      KC_NO,  KC_NO,
-      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,                    KC_NO,  KC_NO,            KC_NO,               KC_NO,        KC_NO,
-      RM_SPDD,         KC_NO,     KC_NO,     KC_NO,     KC_NO,                    RM_SPDU, KC_NO,           KC_NO,               KC_NO,        KC_NO
+      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,          KC_NO,                                   KC_NO,               KC_NO,           KC_NO,           KC_NO,           KC_NO,          KC_NO,
+      KC_NO,           KC_TT_DN,  KC_TT_UP,  KC_NO,     KC_SHOW_METRICS,KC_NO,                                   KC_NO,               KC_ANIM_BREATHE, KC_ANIM_CHEVRON, KC_ANIM_HEATMAP, KC_ANIM_SPLASH, KC_NO,
+      QK_CLEAR_EEPROM, KC_DISP_1, KC_DISP_2, KC_DISP_3, KC_DISP_4,      RM_TOGG,                                 KC_RGB_ANIM_TOGGLE,  RM_HUEU,         RM_VALU,         RM_SPDU,         KC_HUE_RESET,   KC_NO,
+      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,          KC_NO,  KC_NO, KC_NO,  KC_NO,  KC_NO,   KC_NO,               RM_HUED,         RM_VALD,         RM_SPDD,         KC_NO,          KC_NO,
+      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,                          KC_NO,  KC_NO,           KC_NO,               KC_NO,           KC_NO,
+      RM_HUED,         KC_NO,     KC_NO,     KC_NO,     KC_NO,                          KC_HUE_RESET, KC_NO,     KC_NO,               KC_NO,           KC_NO
     ),
 };
 // clang-format on
@@ -195,13 +200,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #ifdef ENCODER_MAP_ENABLE
 // Enc0=left-outer  Enc1=left-inner  Enc2=right-inner  Enc3=right-outer (main dial)
 // Left thumb activates layers; right hand turns the dial.
-// BASE=volume  NUMFN(Space)=LED brightness  NAV(MO·NAV)=page  META(META)=anim speed
+// BASE=volume  NUMFN(Space)=LED brightness (step ~5%)  NAV(MO·NAV)=page
+// META(META)=hue: shifts animation hue (anim mode) or layer palette offset (static mode); click resets hue
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
     [_BASE]  = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
     [_NUMFN] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(RM_VALD, RM_VALU) },
     [_NAV]   = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_PGUP, KC_PGDN) },
     [_SYM]   = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
-    [_META]  = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(RM_SPDD, RM_SPDU) },
+    [_META]  = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(RM_HUED, RM_HUEU) },
 };
 #endif
 
@@ -212,11 +218,13 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 // The slave's copy of rgb_animation_override is always false unless we push it.
 // USER_SYNC_RGB_ANIM is registered in config.h via SPLIT_TRANSACTION_IDS_USER.
 // ---------------------------------------------------------------------------
-typedef struct { bool anim_override; } rgb_sync_t;
+typedef struct { bool anim_override; int8_t hue_offset; } rgb_sync_t;
 
 static void rgb_anim_sync_handler(uint8_t in_buflen, const void *in_data,
                                   uint8_t out_buflen, void *out_data) {
-    rgb_animation_override = ((const rgb_sync_t *)in_data)->anim_override;
+    const rgb_sync_t *d = (const rgb_sync_t *)in_data;
+    rgb_animation_override = d->anim_override;
+    layer_hue_offset       = d->hue_offset;
 }
 
 void keyboard_post_init_user(void) {
@@ -225,10 +233,12 @@ void keyboard_post_init_user(void) {
 
 void housekeeping_task_user(void) {
     if (!is_keyboard_master()) return;
-    static bool last_state = false;
-    if (last_state == rgb_animation_override) return;
-    last_state = rgb_animation_override;
-    rgb_sync_t d = { .anim_override = rgb_animation_override };
+    static bool  last_anim   = false;
+    static int8_t last_offset = 0;
+    if (last_anim == rgb_animation_override && last_offset == layer_hue_offset) return;
+    last_anim   = rgb_animation_override;
+    last_offset = layer_hue_offset;
+    rgb_sync_t d = { .anim_override = rgb_animation_override, .hue_offset = layer_hue_offset };
     transaction_rpc_send(USER_SYNC_RGB_ANIM, sizeof(d), &d);
 }
 
@@ -473,6 +483,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) {
                 rgb_animation_override = !rgb_animation_override;
             }
+            return false;
+
+        // In static mode (no animation) Hue± shift the layer palette offset instead.
+        // In animation mode QMK handles them normally (shifts rgb_matrix_config.hsv.h).
+        case RM_HUEU:
+            if (record->event.pressed && !rgb_animation_override) {
+                layer_hue_offset += 4;
+                return false;
+            }
+            return true;
+        case RM_HUED:
+            if (record->event.pressed && !rgb_animation_override) {
+                layer_hue_offset -= 4;
+                return false;
+            }
+            return true;
+
+        case KC_HUE_RESET:
+            if (record->event.pressed) layer_hue_offset = 0;
+            return false;
+
+        case KC_SHOW_METRICS:
+#ifdef HLC_TFT_DISPLAY
+            if (record->event.pressed && current_display_mode == 2) stats_ui_show_next_metric();
+#endif
             return false;
 
         // Animation preset keys — enable override and switch to the chosen mode.

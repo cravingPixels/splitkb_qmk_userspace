@@ -27,6 +27,12 @@ enum layers {
 // When false, per-layer static colors are applied via rgb_matrix_indicators_advanced_user.
 bool rgb_animation_override = false;
 
+// --- Layer hue offset ---
+// Shifts all static layer colours together by a signed hue delta (wraps at 256).
+// Adjusted via RM_HUEU / RM_HUED (or META encoder 3) when !rgb_animation_override.
+// Synced to the slave half via USER_SYNC_RGB_ANIM. Reset with KC_HUE_RESET.
+int8_t layer_hue_offset = 0;
+
 // brightness_scale: 0-255 multiplier applied on top of rgb_matrix_get_val().
 //   255 = full brightness, 51 = 20% (idle dim target), 0 = off (hard-black all LEDs).
 // When scale is 0 the function blacks out every LED in range and returns, even in
@@ -54,6 +60,9 @@ static inline bool apply_layer_rgb(uint8_t led_min, uint8_t led_max, uint8_t bri
         case _BASE:  hsv = (HSV)LAYER_COLOR_BASE;   break;
         default:     return false;
     }
+
+    // Apply global hue offset (wraps naturally via uint8_t arithmetic).
+    hsv.h = (uint8_t)((int16_t)hsv.h + layer_hue_offset);
 
     // Combine user brightness (RM_VALU/RM_VALD) with the idle-dim multiplier.
     hsv.v = (uint8_t)(((uint16_t)rgb_matrix_get_val() * brightness_scale) >> 8);
@@ -206,6 +215,7 @@ static inline bool apply_layer_rgb(uint8_t led_min, uint8_t led_max, uint8_t bri
     // This makes the thumb cluster layer keys visually distinct from regular keys.
     if (layer == _BASE) {
         HSV accent_hsv  = (HSV)LAYER_COLOR_ACCENT;
+        accent_hsv.h    = (uint8_t)((int16_t)accent_hsv.h + layer_hue_offset);
         accent_hsv.v    = hsv.v;
         RGB accent_rgb  = hsv_to_rgb(accent_hsv);
         for (uint8_t led = led_min; led < led_max; led++) {

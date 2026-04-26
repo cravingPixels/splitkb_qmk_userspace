@@ -1,7 +1,7 @@
 #pragma once
 
 // --- Version ---
-#define KEYMAP_VERSION "v4"
+#define KEYMAP_VERSION "v5"
 
 // --- Tapping ---
 // Value from Vial settings key "4": 175
@@ -16,10 +16,15 @@
 // Only applies on first boot or after EEPROM clear; runtime changes via Spd±/encoder persist.
 #define RGB_MATRIX_DEFAULT_SPD 64
 
-// Keep board default max brightness (128) — raising it increases LED heat on the RP2040
+// Max brightness: 154 = 120 % of 128 (display reference). Going above 128 increases LED
+// heat on the RP2040, so 120 % is the intentional ceiling.
+// Val step: 6 units ≈ 5 % of 128 per encoder click.
 // Idle timeout is handled in keymap.c (dim to 20% at 5 min, off at 15 min).
 // RGB_MATRIX_TIMEOUT is intentionally not set here — setting it would cut power to the
 // RGB matrix before our smooth-dim logic can run.
+#undef  RGB_MATRIX_MAXIMUM_BRIGHTNESS
+#define RGB_MATRIX_MAXIMUM_BRIGHTNESS 154
+#define RGB_MATRIX_VAL_STEP            6
 
 // Enable specific animations (keep only what you use to save firmware space)
 #define ENABLE_RGB_MATRIX_SOLID_COLOR
