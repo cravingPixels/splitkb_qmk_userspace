@@ -14,6 +14,7 @@
 #include QMK_KEYBOARD_H
 #include "rgb_layers.h"
 #include "os_detection.h"
+#include "transactions.h"
 #ifdef HLC_TFT_DISPLAY
 #    include "users/halcyon_modules/splitkb/hlc_tft_display/hlc_tft_display.h"
 #    include "gif_display.h"
@@ -158,9 +159,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
  * |        | TT-  | TT+  |      |      |      |                              |      |      |      |      |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | EEClr  |Dsp 1 |Dsp 2 |Dsp 3 |Dsp 4 |RMTog|                              |AniTgl| Sat+ | Hue+ | Val+ | Next |        |
+ * | EEClr  |Dsp 1 |Dsp 2 |Dsp 3 |Dsp 4 |RMTog|                              |AniTgl| Hue+ | Val+ |      |      |        |
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * |        |      |      |      |      |      |      |      |  |      |      | Sat- | Hue- | Val- | Prev |      |        |
+ * |        |      |      |      |      |      |      |      |  |      |      |      | Hue- | Val- |      |      |        |
  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
@@ -171,8 +172,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_META] = LAYOUT_elora_hlc(
       KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,                                   KC_NO,             KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
       KC_NO,           KC_TT_DN,  KC_TT_UP,  KC_NO,     KC_NO,     KC_NO,                                   KC_NO,             KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      QK_CLEAR_EEPROM, KC_DISP_1, KC_DISP_2, KC_DISP_3, KC_DISP_4, RM_TOGG,                                 KC_RGB_ANIM_TOGGLE,RM_SATU, RM_HUEU, RM_VALU, RM_NEXT, KC_NO,
-      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,  KC_NO, KC_NO,  KC_NO,  KC_NO,   RM_SATD,           RM_HUED, RM_VALD, RM_PREV, KC_NO,   KC_NO,
+      QK_CLEAR_EEPROM, KC_DISP_1, KC_DISP_2, KC_DISP_3, KC_DISP_4, RM_TOGG,                                 KC_RGB_ANIM_TOGGLE,RM_HUEU, RM_VALU, KC_NO,   KC_NO,   KC_NO,
+      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,     KC_NO,  KC_NO, KC_NO,  KC_NO,  KC_NO,   KC_NO,             RM_HUED, RM_VALD, KC_NO,   KC_NO,   KC_NO,
       KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,                    KC_NO,  KC_NO,            KC_NO,             KC_NO,   KC_NO,
       RM_HUED,         KC_NO,     KC_NO,     KC_NO,     KC_NO,                    RM_HUEU, KC_NO,           KC_NO,             KC_NO,   KC_NO
     ),
@@ -195,6 +196,33 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
     [_META]  = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(RM_HUED, RM_HUEU) },
 };
 #endif
+
+// ---------------------------------------------------------------------------
+// Split sync — rgb_animation_override
+//
+// Each half runs its own rgb_matrix_indicators_advanced_user (split_count=[37,37]).
+// The slave's copy of rgb_animation_override is always false unless we push it.
+// USER_SYNC_RGB_ANIM is registered in config.h via SPLIT_TRANSACTION_IDS_USER.
+// ---------------------------------------------------------------------------
+typedef struct { bool anim_override; } rgb_sync_t;
+
+static void rgb_anim_sync_handler(uint8_t in_buflen, const void *in_data,
+                                  uint8_t out_buflen, void *out_data) {
+    rgb_animation_override = ((const rgb_sync_t *)in_data)->anim_override;
+}
+
+void keyboard_post_init_user(void) {
+    transaction_register_rpc(USER_SYNC_RGB_ANIM, rgb_anim_sync_handler);
+}
+
+void housekeeping_task_user(void) {
+    if (!is_keyboard_master()) return;
+    static bool last_state = false;
+    if (last_state == rgb_animation_override) return;
+    last_state = rgb_animation_override;
+    rgb_sync_t d = { .anim_override = rgb_animation_override };
+    transaction_rpc_send(USER_SYNC_RGB_ANIM, sizeof(d), &d);
+}
 
 // ---------------------------------------------------------------------------
 // Idle brightness — shared by RGB LEDs and the LCD curtain effect.

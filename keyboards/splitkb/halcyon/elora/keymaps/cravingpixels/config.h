@@ -26,6 +26,10 @@
 #define ENABLE_RGB_MATRIX_SOLID_REACTIVE_MULTINEXUS
 #define ENABLE_RGB_MATRIX_SPLASH
 
+// --- Split sync: user-defined transaction IDs ---
+// USER_SYNC_RGB_ANIM syncs rgb_animation_override from master to slave.
+#define SPLIT_TRANSACTION_IDS_USER USER_SYNC_RGB_ANIM
+
 // --- Raw HID (for time sync from host) ---
 #define RAW_USAGE_PAGE 0xFF60
 #define RAW_USAGE_ID   0x61
