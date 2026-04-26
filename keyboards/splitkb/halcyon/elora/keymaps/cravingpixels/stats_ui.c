@@ -81,15 +81,13 @@ static const char * const wit_phrases[] = {
 
 // ── Layer metadata ────────────────────────────────────────────────────────────
 typedef struct { const char *name; uint8_t h, s, v; } lyr_t;
+// Colors mirror rgb_layers.h Catppuccin Mocha palette (v boosted to 255 for display).
 static const lyr_t lyr[] = {
-    { "BASE",   HSV_LAYER_0 },
-    { "NUMFN",  HSV_LAYER_1 },
-    { "RGBNAV", HSV_LAYER_2 },
-    { "MODNAV", HSV_LAYER_3 },
-    { "SYM",    HSV_LAYER_4 },
-    { "FN",     HSV_LAYER_5 },
-    { "SYSTEM", HSV_LAYER_6 },
-    { "EXTRA",  HSV_LAYER_7 },
+    { "BASE",  164, 124, 255 },  // Lavender
+    { "NUMFN",  28, 126, 255 },  // Yellow
+    { "NAV",   134, 157, 255 },  // Sky
+    { "SYM",    81, 124, 255 },  // Green
+    { "META",  243, 160, 255 },  // Red
 };
 #define LYR_COUNT ((uint8_t)(sizeof(lyr) / sizeof(lyr[0])))
 
