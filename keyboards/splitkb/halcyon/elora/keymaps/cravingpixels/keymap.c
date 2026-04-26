@@ -40,6 +40,8 @@ enum custom_keycodes {
     KC_ANIM_SPLASH,             // Animation: Splash (reactive)
     KC_SHOW_METRICS,            // Cycle metric toast: TT → LED → SPD → HUE → off
     KC_HUE_RESET,               // Reset layer palette hue offset to 0
+    KC_VOL_UP,                  // macOS fine volume up ×3 (Sft+Opt+Vol) ≈ 5% per tick
+    KC_VOL_DN,                  // macOS fine volume down ×3 (Sft+Opt+Vol) ≈ 5% per tick
 };
 
 // ---------------------------------------------------------------------------
@@ -200,14 +202,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #ifdef ENCODER_MAP_ENABLE
 // Enc0=left-outer  Enc1=left-inner  Enc2=right-inner  Enc3=right-outer (main dial)
 // Left thumb activates layers; right hand turns the dial.
-// BASE=volume  NUMFN(Space)=LED brightness (step ~5%)  NAV(MO·NAV)=page
+// BASE=volume ≈5%/tick  NUMFN(Space)=LED brightness (step ~5%)  NAV(MO·NAV)=page
 // META(META)=hue: shifts animation hue (anim mode) or layer palette offset (static mode); click resets hue
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
-    [_BASE]  = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
-    [_NUMFN] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(RM_VALD, RM_VALU) },
-    [_NAV]   = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_PGUP, KC_PGDN) },
-    [_SYM]   = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU) },
-    [_META]  = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(KC_VOLD, KC_VOLU), ENCODER_CCW_CW(RM_HUED, RM_HUEU) },
+    [_BASE]  = { ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP) },
+    [_NUMFN] = { ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(RM_VALD,    RM_VALU   ) },
+    [_NAV]   = { ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_PGUP,    KC_PGDN   ) },
+    [_SYM]   = { ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN,  KC_VOL_UP ) },
+    [_META]  = { ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(RM_HUED,    RM_HUEU   ) },
 };
 #endif
 
@@ -502,6 +504,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         case KC_HUE_RESET:
             if (record->event.pressed) layer_hue_offset = 0;
+            return false;
+
+        // macOS fine-step volume: Shift+Option+Vol ≈ 1.5625 % per tap; ×3 ≈ 4.7 % ≈ 5 %.
+        case KC_VOL_UP:
+            if (record->event.pressed) {
+                for (uint8_t i = 0; i < 3; i++) tap_code16(LSFT(LALT(KC_VOLU)));
+            }
+            return false;
+        case KC_VOL_DN:
+            if (record->event.pressed) {
+                for (uint8_t i = 0; i < 3; i++) tap_code16(LSFT(LALT(KC_VOLD)));
+            }
             return false;
 
         case KC_SHOW_METRICS:
