@@ -12,6 +12,10 @@
 #define RGB_MATRIX_KEYPRESSES          // needed for reactive animations (solid_reactive, splash)
 #define RGB_MATRIX_FRAMEBUFFER_EFFECTS // needed for typing_heatmap
 
+// Default animation speed — 0-255, QMK default is 128. Lower = slower.
+// Only applies on first boot or after EEPROM clear; runtime changes via Spd±/encoder persist.
+#define RGB_MATRIX_DEFAULT_SPD 64
+
 // Keep board default max brightness (128) — raising it increases LED heat on the RP2040
 // Idle timeout is handled in keymap.c (dim to 20% at 5 min, off at 15 min).
 // RGB_MATRIX_TIMEOUT is intentionally not set here — setting it would cut power to the
