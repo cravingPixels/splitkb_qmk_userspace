@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Block commits when cravingpixels/keymap.c is not in canonical column-aligned form.
+# Install once with:    git config core.hooksPath .githooks
+# Or run:               mise run install-hooks
+set -e
+
+KEYMAP="keyboards/splitkb/halcyon/elora/keymaps/cravingpixels/keymap.c"
+SCRIPT="keyboards/splitkb/halcyon/elora/keymaps/cravingpixels/scripts/format_keymap.py"
+
+# Only act when keymap.c is part of this commit.
+if ! git diff --cached --name-only | grep -qx "$KEYMAP"; then
+    exit 0
+fi
+
+if ! python3 "$SCRIPT" --check --file "$KEYMAP"; then
+    echo
+    echo "  keymap.c is not column-aligned. Fix with:"
+    echo "    mise run format-keymap        (or: python3 $SCRIPT)"
+    echo "  then re-stage and commit."
+    exit 1
+fi

@@ -194,3 +194,17 @@ print()
 [tasks.clean]
 description = "Remove QGF build artifacts from keymap directory"
 run = "rm -f '$KEYMAP_DIR'/*.qgf.* && echo 'Clean.'"
+
+# ── Formatting & hooks ──────────────────────────────────────────────────────
+
+[tasks.format-keymap]
+description = "Re-align all LAYOUT_elora_hlc blocks in keymap.c (in place)"
+run = "python3 $KEYMAP_DIR/scripts/format_keymap.py --file $KEYMAP_DIR/keymap.c"
+
+[tasks.check-keymap-format]
+description = "Exit non-zero if keymap.c is not column-aligned (no write)"
+run = "python3 $KEYMAP_DIR/scripts/format_keymap.py --check --file $KEYMAP_DIR/keymap.c"
+
+[tasks.install-hooks]
+description = "Point git at .githooks/ so pre-commit blocks unaligned keymap.c"
+run = "git config core.hooksPath .githooks && echo '✓ core.hooksPath = .githooks'"
