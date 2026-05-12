@@ -42,6 +42,15 @@ enum custom_keycodes {
     KC_HUE_RESET,               // Reset layer palette hue offset to 0
     KC_VOL_UP,                  // macOS fine volume up ×3 (Sft+Opt+Vol) ≈ 5% per tick
     KC_VOL_DN,                  // macOS fine volume down ×3 (Sft+Opt+Vol) ≈ 5% per tick
+    SLACK_REACT,                // Slack: react to last message — taps Up, then Cmd+Shift+backslash
+    // SYM home row mods on shifted symbols. QMK's MT() drops the shift bit
+    // from the tap keycode, so LGUI_T(KC_CIRC) would send "6" on tap instead
+    // of "^". These custom keycodes preserve shift on tap (see hrm_table).
+    HRM_CIRC,                   // hold = GUI    tap = ^   (Shift+6)
+    HRM_AMPR,                   // hold = Alt    tap = &   (Shift+7)
+    HRM_ASTR,                   // hold = Shift  tap = *   (Shift+8)
+    HRM_QUES,                   // hold = Ctrl   tap = ?   (Shift+/)
+    HRM_LABK,                   // hold = R-GUI  tap = <   (Shift+,)
 };
 
 // ---------------------------------------------------------------------------
@@ -62,7 +71,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
  * |   `    |   Z  |   X  |   C  |   V  |   B  | BSpc | Caps |  | Del  | SS5  |   N  |   M  |  ,   |  .   |  /   | RSft   |
  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        | META | Hypr | Spc  |MEH/BS| NAV  |  | SYM  |MEH/DL| Ent  | Hypr | App  |
+ *                        | META | Hypr | Spc  |MEH/BS| SYM  |  | SYM  |MEH/DL| Ent  | Hypr | APPS |
  *                        |      |      | NUMFN|      |      |  |      |      | NAV  |      |      |
  *                        `----------------------------------'  `----------------------------------'
  * ,-----------------------------------.                                              ,-----------------------------------.
@@ -70,13 +79,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_BASE] = LAYOUT_elora_hlc(
-      KC_APPLICATION,  KC_1,         KC_2,         KC_3,         KC_4,            KC_5,                                                                          KC_6,               KC_7,            KC_8,            KC_9,            KC_0,            KC_RALT,
-      KC_ESCAPE,       KC_Q,         KC_W,         KC_E,         KC_R,            KC_T,                                                                          KC_Y,               KC_U,            KC_I,            KC_O,            KC_P,            KC_BSPC,
-      KC_TAB,          LGUI_T(KC_A), LALT_T(KC_S), LSFT_T(KC_D), LCTL_T(KC_F),    KC_G,                                                                          KC_H,               RCTL_T(KC_J),    RSFT_T(KC_K),    LALT_T(KC_L),    RGUI_T(KC_SCLN), KC_QUOTE,
-      KC_GRAVE,        KC_Z,         KC_X,         KC_C,         KC_V,            KC_B,                 KC_BSPC,        KC_CAPS,     KC_DEL,   SS5_KEY,          KC_N,               KC_M,            KC_COMMA,        KC_DOT,          KC_SLASH,        KC_RSFT,
-                                                   MO(_META),    OSM(MOD_HYPR),   LT(_NUMFN, KC_SPACE), MEH_T(KC_BSPC), MO(_NAV),    MO(_SYM), MEH_T(KC_DELETE), LT(_NAV, KC_ENTER), OSM(MOD_HYPR),   KC_APPLICATION,
+      KC_APPLICATION,  KC_1,          KC_2,          KC_3,          KC_4,            KC_5,                                                                          KC_6,               KC_7,            KC_8,            KC_9,            KC_0,            KC_RALT,
+      KC_ESCAPE,       KC_Q,          KC_W,          KC_E,          KC_R,            KC_T,                                                                          KC_Y,               KC_U,            KC_I,            KC_O,            KC_P,            KC_BSPC,
+      KC_TAB,          LGUI_T(KC_A),  LALT_T(KC_S),  LSFT_T(KC_D),  LCTL_T(KC_F),    KC_G,                                                                          KC_H,               RCTL_T(KC_J),    RSFT_T(KC_K),    LALT_T(KC_L),    RGUI_T(KC_SCLN), KC_QUOTE,
+      KC_GRAVE,        KC_Z,          KC_X,          KC_C,          KC_V,            KC_B,                 KC_BSPC,        KC_CAPS,     KC_DEL,   SS5_KEY,          KC_N,               KC_M,            KC_COMMA,        KC_DOT,          KC_SLASH,        KC_RSFT,
+                                                     MO(_META),     OSM(MOD_HYPR),   LT(_NUMFN, KC_SPACE), MEH_T(KC_BSPC), MO(_SYM),    MO(_SYM), MEH_T(KC_DELETE), LT(_NAV, KC_ENTER), OSM(MOD_HYPR),   MO(_APPS),
 
-      KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                           KC_MUTE,      KC_NO, KC_NO, KC_NO, KC_NO
+      KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                              KC_MUTE,      KC_NO, KC_NO, KC_NO, KC_NO
     ),
 
 /*
@@ -98,13 +107,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_NUMFN] = LAYOUT_elora_hlc(
-      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
-      KC_EQUAL,        KC_1,         KC_2,         KC_3,         KC_4,            KC_5,                                                                          KC_F11,             KC_F1,           KC_F2,           KC_F3,           KC_F4,           KC_F5,
-      KC_MINUS,        LGUI_T(KC_6), LALT_T(KC_7), LSFT_T(KC_8), LCTL_T(KC_9),    KC_0,                                                                          KC_F12,             RCTL_T(KC_F6),   RSFT_T(KC_F7),   LALT_T(KC_F8),   RGUI_T(KC_F9),   KC_F10,
-      KC_NO,           LCTL(KC_Z),   LCTL(KC_X),   LCTL(KC_C),   LCTL(KC_V),      KC_DOT,               KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_BSLS,         KC_NO,
-                                                   KC_NO,        KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
+      KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_EQUAL,        KC_1,          KC_2,          KC_3,          KC_4,            KC_5,                                                                          KC_F11,             KC_F1,           KC_F2,           KC_F3,           KC_F4,           KC_F5,
+      KC_MINUS,        LGUI_T(KC_6),  LALT_T(KC_7),  LSFT_T(KC_8),  LCTL_T(KC_9),    KC_0,                                                                          KC_F12,             RCTL_T(KC_F6),   RSFT_T(KC_F7),   LALT_T(KC_F8),   RGUI_T(KC_F9),   KC_F10,
+      KC_NO,           LCTL(KC_Z),    LCTL(KC_X),    LCTL(KC_C),    LCTL(KC_V),      KC_DOT,               KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_BSLS,         KC_NO,
+                                                     KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
 
-      RM_VALD, KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                           RM_VALU,      KC_NO, KC_NO, KC_NO, KC_NO
+      RM_VALD, KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                              RM_VALU,      KC_NO, KC_NO, KC_NO, KC_NO
     ),
 
 /*
@@ -126,13 +135,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_NAV] = LAYOUT_elora_hlc(
-      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
-      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_MNXT,         KC_NO,                                                                         KC_HOME,            KC_PGDN,         KC_PGUP,         KC_END,          KC_NO,           KC_NO,
-      KC_NO,           KC_LGUI,      KC_LALT,      KC_LSFT,      KC_LCTL,         KC_MPLY,                                                                       KC_LEFT,            KC_DOWN,         KC_UP,           KC_RIGHT,        LSFT(KC_COMMA),  LSFT(KC_DOT),
-      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_MPRV,         KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_BSPC,         KC_DEL,          KC_NO,           KC_NO,
-                                                   KC_NO,        KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
+      KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_MNXT,         KC_NO,                                                                         KC_HOME,            KC_PGDN,         KC_PGUP,         KC_END,          KC_NO,           KC_NO,
+      KC_NO,           KC_LGUI,       KC_LALT,       KC_LSFT,       KC_LCTL,         KC_MPLY,                                                                       KC_LEFT,            KC_DOWN,         KC_UP,           KC_RIGHT,        LSFT(KC_COMMA),  LSFT(KC_DOT),
+      KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_MPRV,         KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_BSPC,         KC_DEL,          KC_NO,           KC_NO,
+                                                     KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
 
-      KC_PGUP, KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                           KC_PGDN,      KC_NO, KC_NO, KC_NO, KC_NO
+      KC_PGUP, KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                              KC_PGDN,      KC_NO, KC_NO, KC_NO, KC_NO
     ),
 
 /*
@@ -141,11 +150,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * ,-------------------------------------------.                              ,-------------------------------------------.
  * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |   +    |   !  |   @  |   #  |   $  |   %  |                              |   =  |   ?  |   /  |      |      |        |
+ * |   +    |   !  |   @  |   #  |   $  |   %  |                              |   =  |   (  |   )  |      |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |   _    |   ^  |   &  |   *  |   (  |   )  |                              |   [  |   ]  |   {  |   }  |   <  |   >    |
+ * |   _    |GUI ^ |Alt & |Sft × |Ctl ? |   /  |                              |      |Ctl/[ |Sft/] | Alt  |GUI < |   >    |
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * |   ~    |   \  |   :  |   ;  |   -  |   |  |      |      |  |      |      |      |      |      |      |      |        |
+ * |   ~    |   \  |   :  |   ;  |   -  |   |  |      |      |  |      |      |      |   {  |   }  |      |      |        |
  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
@@ -154,13 +163,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_SYM] = LAYOUT_elora_hlc(
-      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
-      KC_PLUS,         KC_EXLM,      KC_AT,        KC_HASH,      KC_DLR,          KC_PERC,                                                                       KC_EQUAL,           KC_QUES,         KC_SLASH,        KC_NO,           KC_NO,           KC_NO,
-      KC_UNDS,         KC_CIRC,      KC_AMPR,      KC_ASTR,      KC_LPRN,         KC_RPRN,                                                                       KC_LBRC,            KC_RBRC,         KC_LCBR,         KC_RCBR,         LSFT(KC_COMMA),  LSFT(KC_DOT),
-      KC_TILD,         KC_BSLS,      KC_COLN,      KC_SCLN,      KC_MINUS,        KC_PIPE,              KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
-                                                   KC_NO,        KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
+      KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_PLUS,         KC_EXLM,       KC_AT,         KC_HASH,       KC_DLR,          KC_PERC,                                                                       KC_EQUAL,           KC_LPRN,         KC_RPRN,         KC_NO,           KC_NO,           KC_NO,
+      KC_UNDS,         HRM_CIRC,      HRM_AMPR,      HRM_ASTR,      HRM_QUES,        KC_SLASH,                                                                      KC_NO,              RCTL_T(KC_LBRC), RSFT_T(KC_RBRC), LALT_T(KC_NO),   HRM_LABK,        LSFT(KC_DOT),
+      KC_TILD,         KC_BSLS,       KC_COLN,       KC_SCLN,       KC_MINUS,        KC_PIPE,              KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_LCBR,         KC_RCBR,         KC_NO,           KC_NO,           KC_NO,
+                                                     KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
 
-      KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                           KC_NO,        KC_NO, KC_NO, KC_NO, KC_NO
+      KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                              KC_NO,        KC_NO, KC_NO, KC_NO, KC_NO
     ),
 
 /*
@@ -189,13 +198,45 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_META] = LAYOUT_elora_hlc(
-      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
-      KC_NO,           KC_TT_DN,     KC_TT_UP,     KC_NO,        KC_SHOW_METRICS, KC_NO,                                                                         KC_NO,              KC_ANIM_BREATHE, KC_ANIM_CHEVRON, KC_ANIM_HEATMAP, KC_ANIM_SPLASH,  KC_NO,
-      QK_CLEAR_EEPROM, KC_DISP_1,    KC_DISP_2,    KC_DISP_3,    KC_DISP_4,       RM_TOGG,                                                                       KC_RGB_ANIM_TOGGLE, RM_HUEU,         RM_VALU,         RM_SPDU,         KC_HUE_RESET,    KC_NO,
-      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              RM_HUED,         RM_VALD,         RM_SPDD,         KC_NO,           KC_NO,
-                                                   KC_NO,        KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
+      KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_NO,           KC_TT_DN,      KC_TT_UP,      KC_NO,         KC_SHOW_METRICS, KC_NO,                                                                         KC_NO,              KC_ANIM_BREATHE, KC_ANIM_CHEVRON, KC_ANIM_HEATMAP, KC_ANIM_SPLASH,  KC_NO,
+      QK_CLEAR_EEPROM, KC_DISP_1,     KC_DISP_2,     KC_DISP_3,     KC_DISP_4,       RM_TOGG,                                                                       KC_RGB_ANIM_TOGGLE, RM_HUEU,         RM_VALU,         RM_SPDU,         KC_HUE_RESET,    KC_NO,
+      KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              RM_HUED,         RM_VALD,         RM_SPDD,         KC_NO,           KC_NO,
+                                                     KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
 
-      RM_HUED, KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                           KC_HUE_RESET, KC_NO, KC_NO, KC_NO, KC_NO
+      RM_HUED, KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                              KC_HUE_RESET, KC_NO, KC_NO, KC_NO, KC_NO
+    ),
+
+/*
+ * Layer 5 — APPS: app-specific shortcuts   [hold right outer thumb]
+ *
+ * Zellij  : Alt+[ / Alt+]   — previous / next pane
+ * IntelliJ: Cmd+[ / Cmd+]   — back / forward navigation (also works in many editors)
+ * Slack   : Up then Cmd+Shift+\ — react to last message in current channel/thread
+ *
+ * ,-------------------------------------------.                              ,-------------------------------------------.
+ * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
+ * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
+ * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
+ * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
+ * |        | Z [  | Z ]  | IJ [ | IJ ] | React|                              |      |      |      |      |      |        |
+ * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
+ * |        |      |      |      |      |      |      |      |  |      |      |      |      |      |      |      |        |
+ * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
+ *                        |      |      |      |      |      |  |      |      |      |      |      |
+ *                        `----------------------------------'  `----------------------------------'
+ * ,-----------------------------------.                                              ,-----------------------------------.
+ * |      |      |       |      |      |                                              |      |      |       |      |      |
+ * `-----------------------------------'                                              `-----------------------------------'
+ */
+    [_APPS] = LAYOUT_elora_hlc(
+      KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_NO,           LALT(KC_LBRC), LALT(KC_RBRC), LGUI(KC_LBRC), LGUI(KC_RBRC),   SLACK_REACT,                                                                   KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+                                                     KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
+
+      KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                              KC_NO,        KC_NO, KC_NO, KC_NO, KC_NO
     ),
 };
 // clang-format on
@@ -215,6 +256,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
     [_NAV]   = { ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_PGUP,    KC_PGDN   ) },
     [_SYM]   = { ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN,  KC_VOL_UP ) },
     [_META]  = { ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(RM_HUED,    RM_HUEU   ) },
+    [_APPS]  = { ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN,  KC_VOL_UP ) },
 };
 #endif
 
@@ -420,6 +462,82 @@ bool display_module_housekeeping_task_user(bool second_display) {
 #endif  // HLC_TFT_DISPLAY
 
 // ---------------------------------------------------------------------------
+// SYM home row mod-taps with shifted-symbol tap actions
+//
+// QMK's built-in MT()/LSFT_T()/etc. mask the tap keycode to 8 bits, dropping
+// the shift bit baked into shifted "convenience" keycodes (KC_CIRC == S(KC_6),
+// KC_AMPR == S(KC_7), KC_ASTR == S(KC_8), KC_QUES == S(KC_SLASH), KC_LABK ==
+// S(KC_COMMA)). LGUI_T(KC_CIRC) would therefore send "6" on tap instead of "^".
+//
+// This minimal hold-on-other-key-press implementation gives correct behavior
+// for the SYM home row:
+//   press                                         → arm timer, do NOT register mod yet
+//   release before TAPPING_TERM, no interruption  → tap_code16(shifted symbol)
+//   any other key pressed while still armed       → register mod (becomes a hold)
+//   release after mod was registered              → unregister mod
+//   release after TAPPING_TERM, no interruption   → swallow (held alone too long)
+//
+// Trade-off vs QMK's built-in mod-tap: no permissive-hold or retro-tap. Fast
+// rolls (HRM_CIRC then HRM_AMPR while CIRC still in its window) commit CIRC
+// as a hold, so the second key fires with that mod. Acceptable on SYM.
+// ---------------------------------------------------------------------------
+enum hrm_slot { HRM_S_CIRC, HRM_S_AMPR, HRM_S_ASTR, HRM_S_QUES, HRM_S_LABK, HRM_SLOT_COUNT };
+
+static struct {
+    uint16_t timer;
+    bool     active;        // pressed, not yet released
+    bool     held_active;   // mod has been registered
+} hrm_state[HRM_SLOT_COUNT];
+
+static const struct {
+    uint8_t  mod_bit;
+    uint16_t tap_kc;
+} hrm_table[HRM_SLOT_COUNT] = {
+    [HRM_S_CIRC] = { MOD_BIT(KC_LGUI), KC_CIRC          },
+    [HRM_S_AMPR] = { MOD_BIT(KC_LALT), KC_AMPR          },
+    [HRM_S_ASTR] = { MOD_BIT(KC_LSFT), KC_ASTR          },
+    [HRM_S_QUES] = { MOD_BIT(KC_LCTL), KC_QUES          },
+    [HRM_S_LABK] = { MOD_BIT(KC_RGUI), LSFT(KC_COMMA)   },
+};
+
+static int hrm_slot_for(uint16_t kc) {
+    switch (kc) {
+        case HRM_CIRC: return HRM_S_CIRC;
+        case HRM_AMPR: return HRM_S_AMPR;
+        case HRM_ASTR: return HRM_S_ASTR;
+        case HRM_QUES: return HRM_S_QUES;
+        case HRM_LABK: return HRM_S_LABK;
+        default:       return -1;
+    }
+}
+
+static void hrm_promote_pending(void) {
+    for (int i = 0; i < HRM_SLOT_COUNT; i++) {
+        if (hrm_state[i].active && !hrm_state[i].held_active) {
+            register_mods(hrm_table[i].mod_bit);
+            hrm_state[i].held_active = true;
+        }
+    }
+}
+
+static bool hrm_process(int slot, keyrecord_t *record) {
+    if (record->event.pressed) {
+        hrm_state[slot].timer       = timer_read();
+        hrm_state[slot].active      = true;
+        hrm_state[slot].held_active = false;
+    } else {
+        if (hrm_state[slot].held_active) {
+            unregister_mods(hrm_table[slot].mod_bit);
+        } else if (timer_elapsed(hrm_state[slot].timer) < g_tapping_term) {
+            tap_code16(hrm_table[slot].tap_kc);
+        }
+        hrm_state[slot].active      = false;
+        hrm_state[slot].held_active = false;
+    }
+    return false;
+}
+
+// ---------------------------------------------------------------------------
 // Custom keycode handling
 // ---------------------------------------------------------------------------
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -428,6 +546,20 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         conway_keypress();
     }
 #endif
+
+    // SYM home row mod-tap: any key press while an HRM slot is armed promotes
+    // it to a held modifier (hold-on-other-key-press semantics).
+    if (record->event.pressed) {
+        int armed_slot = hrm_slot_for(keycode);
+        if (armed_slot < 0) {
+            // Pressed key is not an HRM — promote any HRMs in their deciding window.
+            hrm_promote_pending();
+        }
+    }
+    {
+        int slot = hrm_slot_for(keycode);
+        if (slot >= 0) return hrm_process(slot, record);
+    }
 
     switch (keycode) {
 
@@ -520,6 +652,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_VOL_DN:
             if (record->event.pressed) {
                 for (uint8_t i = 0; i < 3; i++) tap_code16(LSFT(LALT(KC_VOLD)));
+            }
+            return false;
+
+        // Slack: react to last message — Up arrow selects previous message,
+        // then Cmd+Shift+\ opens the emoji reaction picker for that message.
+        case SLACK_REACT:
+            if (record->event.pressed) {
+                SEND_STRING(SS_TAP(X_UP) SS_LCMD(SS_LSFT("\\")));
             }
             return false;
 

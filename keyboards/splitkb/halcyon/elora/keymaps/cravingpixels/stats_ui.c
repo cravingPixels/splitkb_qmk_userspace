@@ -99,6 +99,7 @@ static const lyr_t lyr[] = {
     { "NAV",   134, 157, 255 },  // Sky
     { "SYM",    81, 124, 255 },  // Green
     { "META",  243, 160, 255 },  // Red
+    { "APPS",  190, 130, 255 },  // Mauve
 };
 #define LYR_COUNT ((uint8_t)(sizeof(lyr) / sizeof(lyr[0])))
 

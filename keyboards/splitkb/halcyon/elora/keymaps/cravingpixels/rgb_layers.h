@@ -7,8 +7,9 @@ enum layers {
     _BASE = 0,   // QWERTY + home row mods
     _NUMFN,      // Numbers (left) + F-keys (right)  — hold Space
     _NAV,        // Navigation + media               — hold MO·NAV (left inner) or Ent/NAV (right thumb)
-    _SYM,        // Symbols for coding               — hold MO·SYM (right inner)
+    _SYM,        // Symbols for coding               — hold both thumb inners + home row mods
     _META,       // Keyboard settings                — hold META (left outer)
+    _APPS,       // App shortcuts (Zellij/IntelliJ/Slack) — hold right outer thumb
 };
 
 // --- Per-layer HSV colors — Catppuccin Mocha palette (boosted saturation) ---
@@ -20,6 +21,7 @@ enum layers {
 #define LAYER_COLOR_NAV     {134, 157, 0}  // Sky
 #define LAYER_COLOR_SYM     { 81, 124, 0}  // Green
 #define LAYER_COLOR_META    {243, 160, 0}  // Red
+#define LAYER_COLOR_APPS    {190, 130, 0}  // Mauve
 #define LAYER_COLOR_ACCENT  { 16, 167, 0}  // Peach — LT/MO layer-activating keys on BASE
 
 // --- RGB animation override ---
@@ -57,6 +59,7 @@ static inline bool apply_layer_rgb(uint8_t led_min, uint8_t led_max, uint8_t bri
         case _NAV:   hsv = (HSV)LAYER_COLOR_NAV;   break;
         case _SYM:   hsv = (HSV)LAYER_COLOR_SYM;   break;
         case _META:  hsv = (HSV)LAYER_COLOR_META;   break;
+        case _APPS:  hsv = (HSV)LAYER_COLOR_APPS;   break;
         case _BASE:  hsv = (HSV)LAYER_COLOR_BASE;   break;
         default:     return false;
     }
