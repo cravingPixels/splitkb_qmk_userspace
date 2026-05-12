@@ -232,7 +232,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_APPS] = LAYOUT_elora_hlc(
       KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
       KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
-      KC_NO,           LALT(KC_LBRC), LALT(KC_RBRC), LGUI(KC_LBRC), LGUI(KC_RBRC),   SLACK_REACT,                                                                   KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_NO,           LALT(KC_LBRC), LALT(KC_RBRC), LCTL(KC_LBRC), LCTL(KC_RBRC),   SLACK_REACT,                                                                   KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
       KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
                                                      KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
 
@@ -655,11 +655,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
 
-        // Slack: react to last message — Up arrow selects previous message,
-        // then Cmd+Shift+\ opens the emoji reaction picker for that message.
+        // Slack: react to last message. Slack default = Shift+Cmd+\.
+        // With Ctrl↔GUI swapped in macOS Modifier Keys, QMK sends LCTL so macOS
+        // interprets it as Cmd.
         case SLACK_REACT:
             if (record->event.pressed) {
-                SEND_STRING(SS_TAP(X_UP) SS_LCMD(SS_LSFT("\\")));
+                SEND_STRING(SS_LCTL(SS_LSFT("\\")));
             }
             return false;
 
