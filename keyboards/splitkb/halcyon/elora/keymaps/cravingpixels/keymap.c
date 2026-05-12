@@ -70,12 +70,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_BASE] = LAYOUT_elora_hlc(
-      KC_APPLICATION, KC_1,          KC_2,                 KC_3,          KC_4,          KC_5,                                        KC_6,    KC_7,              KC_8,          KC_9,           KC_0,            KC_RALT,
-      KC_ESCAPE,      KC_Q,          KC_W,                 KC_E,          KC_R,          KC_T,                                        KC_Y,    KC_U,              KC_I,          KC_O,           KC_P,            KC_BSPC,
-      KC_TAB,         LGUI_T(KC_A),  LALT_T(KC_S),         LSFT_T(KC_D), LCTL_T(KC_F),  KC_G,                                        KC_H,    RCTL_T(KC_J),      RSFT_T(KC_K),  LALT_T(KC_L),   RGUI_T(KC_SCLN), KC_QUOTE,
-      KC_GRAVE,       KC_Z,          KC_X,                 KC_C,          KC_V,          KC_B,    KC_BSPC,  KC_CAPS,   KC_DEL,  SS5_KEY,  KC_N, KC_M,            KC_COMMA,      KC_DOT,         KC_SLASH,        KC_RSFT,
-      MO(_META),      OSM(MOD_HYPR), LT(_NUMFN, KC_SPACE), MEH_T(KC_BSPC), MO(_NAV),              MO(_SYM), MEH_T(KC_DELETE), LT(_NAV, KC_ENTER), OSM(MOD_HYPR), KC_APPLICATION,
-      KC_NO,          KC_NO,         KC_NO,                KC_NO,         KC_NO,                   KC_MUTE,  KC_NO,    KC_NO,         KC_NO,          KC_NO
+      KC_APPLICATION,  KC_1,         KC_2,         KC_3,         KC_4,            KC_5,                                                                          KC_6,               KC_7,            KC_8,            KC_9,            KC_0,            KC_RALT,
+      KC_ESCAPE,       KC_Q,         KC_W,         KC_E,         KC_R,            KC_T,                                                                          KC_Y,               KC_U,            KC_I,            KC_O,            KC_P,            KC_BSPC,
+      KC_TAB,          LGUI_T(KC_A), LALT_T(KC_S), LSFT_T(KC_D), LCTL_T(KC_F),    KC_G,                                                                          KC_H,               RCTL_T(KC_J),    RSFT_T(KC_K),    LALT_T(KC_L),    RGUI_T(KC_SCLN), KC_QUOTE,
+      KC_GRAVE,        KC_Z,         KC_X,         KC_C,         KC_V,            KC_B,                 KC_BSPC,        KC_CAPS,     KC_DEL,   SS5_KEY,          KC_N,               KC_M,            KC_COMMA,        KC_DOT,          KC_SLASH,        KC_RSFT,
+                                                   MO(_META),    OSM(MOD_HYPR),   LT(_NUMFN, KC_SPACE), MEH_T(KC_BSPC), MO(_NAV),    MO(_SYM), MEH_T(KC_DELETE), LT(_NAV, KC_ENTER), OSM(MOD_HYPR),   KC_APPLICATION,
+
+      KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                           KC_MUTE,      KC_NO, KC_NO, KC_NO, KC_NO
     ),
 
 /*
@@ -97,12 +98,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_NUMFN] = LAYOUT_elora_hlc(
-      KC_NO,    KC_NO,        KC_NO,        KC_NO,        KC_NO,        KC_NO,                               KC_NO,   KC_NO,         KC_NO,         KC_NO,         KC_NO,         KC_NO,
-      KC_EQUAL, KC_1,         KC_2,         KC_3,         KC_4,         KC_5,                                KC_F11,  KC_F1,         KC_F2,         KC_F3,         KC_F4,         KC_F5,
-      KC_MINUS, LGUI_T(KC_6), LALT_T(KC_7), LSFT_T(KC_8), LCTL_T(KC_9), KC_0,                               KC_F12,  RCTL_T(KC_F6), RSFT_T(KC_F7), LALT_T(KC_F8), RGUI_T(KC_F9), KC_F10,
-      KC_NO,    LCTL(KC_Z),   LCTL(KC_X),   LCTL(KC_C),   LCTL(KC_V),   KC_DOT,  KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,  KC_NO,         KC_NO,         KC_NO,         KC_BSLS,       KC_NO,
-      KC_NO,    KC_NO,        KC_NO,        KC_NO,        KC_NO,                  KC_NO, KC_NO,              KC_NO,   KC_NO,         KC_NO,
-      RM_VALD,  KC_NO,        KC_NO,        KC_NO,        KC_NO,                  RM_VALU, KC_NO,            KC_NO,   KC_NO,         KC_NO
+      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_EQUAL,        KC_1,         KC_2,         KC_3,         KC_4,            KC_5,                                                                          KC_F11,             KC_F1,           KC_F2,           KC_F3,           KC_F4,           KC_F5,
+      KC_MINUS,        LGUI_T(KC_6), LALT_T(KC_7), LSFT_T(KC_8), LCTL_T(KC_9),    KC_0,                                                                          KC_F12,             RCTL_T(KC_F6),   RSFT_T(KC_F7),   LALT_T(KC_F8),   RGUI_T(KC_F9),   KC_F10,
+      KC_NO,           LCTL(KC_Z),   LCTL(KC_X),   LCTL(KC_C),   LCTL(KC_V),      KC_DOT,               KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_BSLS,         KC_NO,
+                                                   KC_NO,        KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
+
+      RM_VALD, KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                           RM_VALU,      KC_NO, KC_NO, KC_NO, KC_NO
     ),
 
 /*
@@ -124,12 +126,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_NAV] = LAYOUT_elora_hlc(
-      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                                KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,  KC_NO,
-      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_MNXT, KC_NO,                                KC_HOME, KC_PGDN, KC_PGUP, KC_END,  KC_NO,  KC_NO,
-      KC_NO,   KC_LGUI, KC_LALT, KC_LSFT, KC_LCTL, KC_MPLY,                              KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,LSFT(KC_COMMA), LSFT(KC_DOT),
-      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_MPRV, KC_NO,  KC_NO, KC_NO,  KC_NO, KC_NO, KC_NO,   KC_NO,   KC_BSPC, KC_DEL,  KC_NO,  KC_NO,
-      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                   KC_NO,  KC_NO,         KC_NO,   KC_NO,   KC_NO,
-      KC_PGUP, KC_NO,   KC_NO,   KC_NO,   KC_NO,                   KC_PGDN, KC_NO,        KC_NO,   KC_NO,   KC_NO
+      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_MNXT,         KC_NO,                                                                         KC_HOME,            KC_PGDN,         KC_PGUP,         KC_END,          KC_NO,           KC_NO,
+      KC_NO,           KC_LGUI,      KC_LALT,      KC_LSFT,      KC_LCTL,         KC_MPLY,                                                                       KC_LEFT,            KC_DOWN,         KC_UP,           KC_RIGHT,        LSFT(KC_COMMA),  LSFT(KC_DOT),
+      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_MPRV,         KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_BSPC,         KC_DEL,          KC_NO,           KC_NO,
+                                                   KC_NO,        KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
+
+      KC_PGUP, KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                           KC_PGDN,      KC_NO, KC_NO, KC_NO, KC_NO
     ),
 
 /*
@@ -151,12 +154,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_SYM] = LAYOUT_elora_hlc(
-      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                                     KC_NO,   KC_NO,   KC_NO,              KC_NO,              KC_NO,  KC_NO,
-      KC_PLUS, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                                   KC_EQUAL,KC_QUES, KC_SLASH,           KC_NO,              KC_NO,  KC_NO,
-      KC_UNDS, KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN,                                   KC_LBRC, KC_RBRC, KC_LCBR,            KC_RCBR,            LSFT(KC_COMMA), LSFT(KC_DOT),
-      KC_TILD, KC_BSLS, KC_COLN, KC_SCLN, KC_MINUS,KC_PIPE, KC_NO, KC_NO,  KC_NO,  KC_NO,    KC_NO,   KC_NO,   KC_NO,              KC_NO,              KC_NO,  KC_NO,
-      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                    KC_NO,  KC_NO,             KC_NO,   KC_NO,   KC_NO,
-      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,                    KC_NO,  KC_NO,             KC_NO,   KC_NO,   KC_NO
+      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_PLUS,         KC_EXLM,      KC_AT,        KC_HASH,      KC_DLR,          KC_PERC,                                                                       KC_EQUAL,           KC_QUES,         KC_SLASH,        KC_NO,           KC_NO,           KC_NO,
+      KC_UNDS,         KC_CIRC,      KC_AMPR,      KC_ASTR,      KC_LPRN,         KC_RPRN,                                                                       KC_LBRC,            KC_RBRC,         KC_LCBR,         KC_RCBR,         LSFT(KC_COMMA),  LSFT(KC_DOT),
+      KC_TILD,         KC_BSLS,      KC_COLN,      KC_SCLN,      KC_MINUS,        KC_PIPE,              KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+                                                   KC_NO,        KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
+
+      KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                           KC_NO,        KC_NO, KC_NO, KC_NO, KC_NO
     ),
 
 /*
@@ -185,12 +189,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_META] = LAYOUT_elora_hlc(
-      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,          KC_NO,                                   KC_NO,               KC_NO,           KC_NO,           KC_NO,           KC_NO,          KC_NO,
-      KC_NO,           KC_TT_DN,  KC_TT_UP,  KC_NO,     KC_SHOW_METRICS,KC_NO,                                   KC_NO,               KC_ANIM_BREATHE, KC_ANIM_CHEVRON, KC_ANIM_HEATMAP, KC_ANIM_SPLASH, KC_NO,
-      QK_CLEAR_EEPROM, KC_DISP_1, KC_DISP_2, KC_DISP_3, KC_DISP_4,      RM_TOGG,                                 KC_RGB_ANIM_TOGGLE,  RM_HUEU,         RM_VALU,         RM_SPDU,         KC_HUE_RESET,   KC_NO,
-      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,          KC_NO,  KC_NO, KC_NO,  KC_NO,  KC_NO,   KC_NO,               RM_HUED,         RM_VALD,         RM_SPDD,         KC_NO,          KC_NO,
-      KC_NO,           KC_NO,     KC_NO,     KC_NO,     KC_NO,                          KC_NO,  KC_NO,           KC_NO,               KC_NO,           KC_NO,
-      RM_HUED,         KC_NO,     KC_NO,     KC_NO,     KC_NO,                          KC_HUE_RESET, KC_NO,     KC_NO,               KC_NO,           KC_NO
+      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_NO,           KC_TT_DN,     KC_TT_UP,     KC_NO,        KC_SHOW_METRICS, KC_NO,                                                                         KC_NO,              KC_ANIM_BREATHE, KC_ANIM_CHEVRON, KC_ANIM_HEATMAP, KC_ANIM_SPLASH,  KC_NO,
+      QK_CLEAR_EEPROM, KC_DISP_1,    KC_DISP_2,    KC_DISP_3,    KC_DISP_4,       RM_TOGG,                                                                       KC_RGB_ANIM_TOGGLE, RM_HUEU,         RM_VALU,         RM_SPDU,         KC_HUE_RESET,    KC_NO,
+      KC_NO,           KC_NO,        KC_NO,        KC_NO,        KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              RM_HUED,         RM_VALD,         RM_SPDD,         KC_NO,           KC_NO,
+                                                   KC_NO,        KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
+
+      RM_HUED, KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                           KC_HUE_RESET, KC_NO, KC_NO, KC_NO, KC_NO
     ),
 };
 // clang-format on
