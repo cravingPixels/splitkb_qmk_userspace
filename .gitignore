@@ -10,9 +10,6 @@
 *.bin
 *.uf2
 
-# Generated QMK graphics/font assets
-keyboards/splitkb/halcyon/elora/keymaps/cravingpixels/generated/
-
 # clangd
 compile_commands.json
 .clangd/

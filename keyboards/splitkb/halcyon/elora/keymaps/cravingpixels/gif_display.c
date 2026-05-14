@@ -8,7 +8,7 @@
 
 #include QMK_KEYBOARD_H
 #include "users/halcyon_modules/splitkb/hlc_tft_display/hlc_tft_display.h"
-#include "generated/gif1.qgf.h"
+#include "gif1.qgf.h"
 
 static painter_image_handle_t gif_handle  = NULL;
 static deferred_token         gif_anim    = INVALID_DEFERRED_TOKEN;
