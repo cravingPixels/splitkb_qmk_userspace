@@ -1,4 +1,5 @@
-// Halcyon Elora rev2 — custom keymap (cravingpixels v5)
+// Halcyon Elora rev2 — custom keymap (cravingpixels v6)
+// Halcyon Elora rev2 — custom keymap (cravingpixels v6)
 //
 // Layers: BASE · NUMFN · NAV · SYM · META
 //
