@@ -225,9 +225,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * Aerospace : Opt+Sft+Cmd+- / Opt+Sft+Cmd+=  — shrink / grow focused window
  *
  * ,-------------------------------------------.                              ,-------------------------------------------.
- * |        |      | AS - | AS + |      |      |                              |      |      |      |      |      |        |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
  * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
+ * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
+ * |        |      |      | AS - | AS + |      |                              |      |      |      |      |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
  * |        | Z [  | Z ]  | IJ [ | IJ ] | React|                              |      |      |      |      |      |        |
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
@@ -240,8 +240,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_APPS] = LAYOUT_elora_hlc(
-      KC_NO,           KC_NO,         AS_DEC,        AS_INC,        KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
       KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_NO,           KC_NO,         KC_NO,         AS_DEC,        AS_INC,          KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
       KC_NO,           LALT(KC_LBRC), LALT(KC_RBRC), LCTL(KC_LBRC), LCTL(KC_RBRC),   SLACK_REACT,                                                                   KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
       KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
                                                      KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,
