@@ -77,7 +77,7 @@ set -euo pipefail
 shopt -s nullglob
 for f in "$ASSETS_DIR"/*.png "$ASSETS_DIR"/*.gif; do
     echo "  Converting $f (rgb565)"
-    qmk painter-convert-graphics -i "$f" -o "$KEYMAP_DIR/" -f rgb565
+    qmk painter-convert-graphics -i "$f" -o "$KEYMAP_DIR/generated/" -f rgb565
 done
 echo "Done."
 """
@@ -90,7 +90,7 @@ set -euo pipefail
 shopt -s nullglob
 for f in "$ASSETS_DIR"/*.png "$ASSETS_DIR"/*.gif; do
     echo "  Converting $f (pal16)"
-    qmk painter-convert-graphics -i "$f" -o "$KEYMAP_DIR/" -f pal16
+    qmk painter-convert-graphics -i "$f" -o "$KEYMAP_DIR/generated/" -f pal16
 done
 echo "Done."
 """
@@ -104,7 +104,7 @@ for f in gif1 gif2 gif3; do
     src="$ASSETS_DIR/${f}.gif"
     [ -f "$src" ] || { echo "  Skipping $src (not found)"; continue; }
     echo "  Converting $src (rgb565)"
-    qmk painter-convert-graphics -i "$src" -o "$KEYMAP_DIR/" -f rgb565
+    qmk painter-convert-graphics -i "$src" -o "$KEYMAP_DIR/generated/" -f rgb565
 done
 echo "Done."
 """
@@ -158,7 +158,7 @@ for side, target in targets.items():
 # ── Verbose: QGF binary sizes from header declarations ───────────────────────
 import re
 if KEYMAP_DIR.exists():
-    h_files = sorted(p for p in KEYMAP_DIR.iterdir() if p.name.endswith(".qgf.h"))
+    h_files = sorted(p for p in (KEYMAP_DIR / "generated").iterdir() if p.name.endswith(".qgf.h"))
     if h_files:
         print()
         print("  Keymap QGF assets (binary sizes from header declarations):")
@@ -193,7 +193,7 @@ print()
 
 [tasks.clean]
 description = "Remove QGF build artifacts from keymap directory"
-run = "rm -f '$KEYMAP_DIR'/*.qgf.* && echo 'Clean.'"
+run = "rm -f '$KEYMAP_DIR/generated'/*.qgf.* '$KEYMAP_DIR/generated'/*.qff.* && echo 'Clean.'"
 
 # ── Formatting & hooks ──────────────────────────────────────────────────────
 

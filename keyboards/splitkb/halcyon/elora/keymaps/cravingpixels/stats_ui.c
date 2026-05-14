@@ -6,8 +6,8 @@
 
 #include QMK_KEYBOARD_H
 #include "users/halcyon_modules/splitkb/hlc_tft_display/hlc_tft_display.h"
-#include "FiraCodeNerdFontMono-Regular-24.qff.h"
-#include "sleeping_snorlax_120x96.qgf.h"
+#include "generated/FiraCodeNerdFontMono-Regular-24.qff.h"
+#include "generated/sleeping_snorlax_120x96.qgf.h"
 
 extern uint16_t g_tapping_term;
 extern bool     rgb_animation_override;
