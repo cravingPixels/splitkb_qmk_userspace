@@ -32,13 +32,8 @@ echo "✓ Done. Run 'mise run compile' to build firmware."
 # ── Compile ─────────────────────────────────────────────────────────────────
 
 [tasks.compile]
-description = "Compile both halves (left then right)"
-run = """
-#!/usr/bin/env bash
-set -euo pipefail
-qmk compile -kb $KEYBOARD -km $KEYMAP -e HLC_TFT_DISPLAY=1 -e TARGET=$TARGET_LEFT
-qmk compile -kb $KEYBOARD -km $KEYMAP -e HLC_ENCODER_REV2=1 -e TARGET=$TARGET_RIGHT
-"""
+description = "Compile both halves"
+depends = ["compile-left", "compile-right"]
 
 [tasks.compile-left]
 description = "Compile left half (TFT display module)"
