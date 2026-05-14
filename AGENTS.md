@@ -48,7 +48,7 @@ rgb_layers.h    — layer enum, Catppuccin HSV colors, per-key LED dimming, anim
 stats_ui.c      — LCD stats display (mode 2): layer name/color, locks, TT, LED val, WPM
 conway.c        — LCD Conway's Game of Life (mode 3)
 gif_display.c   — LCD full-screen GIF (mode 4)
-*.qgf.* *.qff.* — converted image/font assets (build artifacts, not committed)
+*.qgf.* *.qff.* — converted image/font assets (compiled into firmware via SRC +=, must be committed)
 ```
 
 ### Layers
@@ -150,7 +150,7 @@ mise run convert          # PNG/GIF → QGF
 - Do not modify `users/halcyon_modules/` — that is splitkb's shared code
 - Do not hardcode pin assignments — they come from the board definition
 - Do not add Vial-specific code — this project targets QMK
-- Do not commit `.qgf.*` files — they are generated build artifacts
+- Do not skip committing `.qgf.*` / `.qff.*` files — they are compiled into the firmware via `SRC +=` in `rules.mk` and the repo must be self-contained
 
 ---
 
