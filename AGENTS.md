@@ -2,6 +2,16 @@
 
 ---
 
+## Branch Strategy
+
+This repo is a fork of [splitkb/qmk_userspace](https://github.com/splitkb/qmk_userspace).
+
+- **`halcyon`** is the only working branch — based on `upstream/halcyon` with all keymap work on top. There is no `main` branch; do not create one.
+- `upstream` remote points to `https://github.com/splitkb/qmk_userspace.git` — never push there.
+- To incorporate upstream updates: `git fetch upstream && git rebase upstream/halcyon`, then `git push origin halcyon --force-with-lease`.
+
+---
+
 ## Implementation Status
 
 | Feature | State | Notes |

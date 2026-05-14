@@ -74,6 +74,16 @@ Preferred flashing method: drag-drop the `.uf2` onto the `RPI-RP2` drive.
 
 ---
 
+## Branch strategy
+
+This repo is a fork of [splitkb/qmk_userspace](https://github.com/splitkb/qmk_userspace).
+
+- **`halcyon`** is the only working branch — based on `upstream/halcyon` (splitkb's halcyon-modules branch) with all keymap work on top.
+- When splitkb publishes updates: `git fetch upstream && git rebase upstream/halcyon`, then `git push origin halcyon --force-with-lease`.
+- There is no `main` branch. Do not create one.
+
+---
+
 ## Flashing notes
 
 - Both halves must be flashed separately — each has its own RP2040
