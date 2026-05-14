@@ -32,8 +32,10 @@ echo "✓ Done. Run 'mise run compile' to build firmware."
 # ── Compile ─────────────────────────────────────────────────────────────────
 
 [tasks.compile]
-description = "Compile both halves"
-depends = ["compile-left", "compile-right"]
+description = "Compile both halves (left then right)"
+run = """
+mise run compile-left && mise run compile-right
+"""
 
 [tasks.compile-left]
 description = "Compile left half (TFT display module)"
