@@ -53,6 +53,15 @@ enum custom_keycodes {
     HRM_LABK,                   // hold = R-GUI  tap = <   (Shift+,)
 };
 
+// Aerospace window-resize shortcuts. macOS aerospace.toml binds
+//   alt-shift-cmd-minus = 'resize smart -100'
+//   alt-shift-cmd-equal = 'resize smart +100'
+// With Ctrl↔GUI swapped in macOS Modifier Keys, QMK's LCTL is what macOS
+// interprets as Cmd. Defined as macros (not custom keycodes) so the token
+// stays short and doesn't widen the layer grid columns.
+#define AS_DEC LALT(LSFT(LCTL(KC_MINUS)))
+#define AS_INC LALT(LSFT(LCTL(KC_EQUAL)))
+
 // ---------------------------------------------------------------------------
 // Keymap
 // ---------------------------------------------------------------------------
@@ -210,12 +219,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /*
  * Layer 5 — APPS: app-specific shortcuts   [hold right outer thumb]
  *
- * Zellij  : Alt+[ / Alt+]   — previous / next pane
- * IntelliJ: Cmd+[ / Cmd+]   — back / forward navigation (also works in many editors)
- * Slack   : Up then Cmd+Shift+\ — react to last message in current channel/thread
+ * Zellij    : Alt+[ / Alt+]    — previous / next swap layout
+ * IntelliJ  : Cmd+[ / Cmd+]    — back / forward navigation (also works in many editors)
+ * Slack     : Cmd+Shift+\      — react to last message
+ * Aerospace : Opt+Sft+Cmd+- / Opt+Sft+Cmd+=  — shrink / grow focused window
  *
  * ,-------------------------------------------.                              ,-------------------------------------------.
- * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
+ * |        |      | AS - | AS + |      |      |                              |      |      |      |      |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
  * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
@@ -230,7 +240,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------'                                              `-----------------------------------'
  */
     [_APPS] = LAYOUT_elora_hlc(
-      KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
+      KC_NO,           KC_NO,         AS_DEC,        AS_INC,        KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
       KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                                                                         KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
       KC_NO,           LALT(KC_LBRC), LALT(KC_RBRC), LCTL(KC_LBRC), LCTL(KC_RBRC),   SLACK_REACT,                                                                   KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
       KC_NO,           KC_NO,         KC_NO,         KC_NO,         KC_NO,           KC_NO,                KC_NO,          KC_NO,       KC_NO,    KC_NO,            KC_NO,              KC_NO,           KC_NO,           KC_NO,           KC_NO,           KC_NO,
