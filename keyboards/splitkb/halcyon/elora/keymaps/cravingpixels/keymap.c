@@ -41,8 +41,8 @@ enum custom_keycodes {
     KC_ANIM_SPLASH,             // Animation: Splash (reactive)
     KC_SHOW_METRICS,            // Cycle metric toast: TT → LED → SPD → HUE → off
     KC_HUE_RESET,               // Reset layer palette hue offset to 0
-    KC_VOL_UP,                  // macOS fine volume up ×3 (Sft+Opt+Vol) ≈ 5% per tick
-    KC_VOL_DN,                  // macOS fine volume down ×3 (Sft+Opt+Vol) ≈ 5% per tick
+    KC_VOL_UP,                  // macOS fine volume up (Sft+Opt+Vol, VOL_TAPS_PER_TICK taps per tick)
+    KC_VOL_DN,                  // macOS fine volume down (Sft+Opt+Vol, VOL_TAPS_PER_TICK taps per tick)
     SLACK_REACT,                // Slack: react to last message — taps Up, then Cmd+Shift+backslash
     // SYM home row mods on shifted symbols. QMK's MT() drops the shift bit
     // from the tap keycode, so LGUI_T(KC_CIRC) would send "6" on tap instead
@@ -260,7 +260,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #ifdef ENCODER_MAP_ENABLE
 // Enc0=left-outer  Enc1=left-inner  Enc2=right-inner  Enc3=right-outer (main dial)
 // Left thumb activates layers; right hand turns the dial.
-// BASE=volume ≈5%/tick  NUMFN(Space)=LED brightness (step ~5%)  NAV(MO·NAV)=page
+// BASE=volume 1.6%/tick (see vol_request)  NUMFN(Space)=LED brightness (step ~5%)  NAV(MO·NAV)=page
 // META(META)=hue: shifts animation hue (anim mode) or layer palette offset (static mode); click resets hue
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
     [_BASE]  = { ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP), ENCODER_CCW_CW(KC_VOL_DN, KC_VOL_UP) },
@@ -386,6 +386,73 @@ static uint32_t ss5_deferred(uint32_t trigger_time, void *cb_arg) {
     unregister_code(a->keycode);
     unregister_mods(a->mods);
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// macOS fine-step volume — Shift+Option+Volume = 1/64 of full scale (1.5625 %).
+//
+// Modifier reports and consumer (volume) reports travel on different USB
+// endpoints, so sending them back to back lets the host process the volume
+// report before, or between, the modifier reports: the tick then lands as a
+// plain 6.25 % step, or as Option-only, which opens Sound Settings. The drain
+// below holds Shift+Option for the whole burst, gives the host VOL_MOD_SETTLE_MS
+// to apply each modifier change, and spaces the volume press/release by
+// VOL_TAP_MS. Encoder ticks only bump a counter, so a fast spin never blocks
+// the main loop or overflows the 4-slot encoder event queue.
+// ---------------------------------------------------------------------------
+#define VOL_TAPS_PER_TICK   1    // 1 = 1.6 % per click, 2 = 3.1 %, 4 = 6.25 %
+#define VOL_MOD_SETTLE_MS   15
+#define VOL_TAP_MS          10
+#define VOL_PENDING_MAX     16   // caps the backlog from a long fast spin
+#define VOL_MODS            (MOD_BIT(KC_LSFT) | MOD_BIT(KC_LALT))
+
+enum vol_state { VOL_IDLE, VOL_MODS_SETTLING, VOL_KEY_DOWN, VOL_KEY_UP };
+
+static enum vol_state vol_state     = VOL_IDLE;
+static int8_t         vol_pending   = 0;    // > 0 taps up, < 0 taps down
+static uint8_t        vol_mods_added = 0;   // only the mods we added, so held HRMs survive
+static uint16_t       vol_key_down  = KC_NO;
+
+static uint32_t vol_drain(uint32_t trigger_time, void *cb_arg) {
+    switch (vol_state) {
+        case VOL_MODS_SETTLING:
+        case VOL_KEY_UP:
+            if (vol_pending == 0) {
+                unregister_mods(vol_mods_added);
+                vol_mods_added = 0;
+                vol_state      = VOL_IDLE;
+                return 0;
+            }
+            vol_key_down = vol_pending > 0 ? KC_VOLU : KC_VOLD;
+            vol_pending += vol_pending > 0 ? -1 : 1;
+            register_code(vol_key_down);
+            vol_state = VOL_KEY_DOWN;
+            return VOL_TAP_MS;
+
+        case VOL_KEY_DOWN:
+            unregister_code(vol_key_down);
+            vol_key_down = KC_NO;
+            vol_state    = VOL_KEY_UP;
+            return VOL_TAP_MS;
+
+        case VOL_IDLE:
+            break;
+    }
+    return 0;
+}
+
+static void vol_request(int8_t taps) {
+    int16_t next = (int16_t)vol_pending + taps;
+    if (next >  VOL_PENDING_MAX) next =  VOL_PENDING_MAX;
+    if (next < -VOL_PENDING_MAX) next = -VOL_PENDING_MAX;
+    vol_pending = (int8_t)next;
+
+    if (vol_state != VOL_IDLE) return;
+
+    vol_mods_added = VOL_MODS & ~get_mods();
+    register_mods(vol_mods_added);
+    vol_state = VOL_MODS_SETTLING;
+    defer_exec(VOL_MOD_SETTLE_MS, vol_drain, NULL);
 }
 
 // ---------------------------------------------------------------------------
@@ -655,16 +722,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) layer_hue_offset = 0;
             return false;
 
-        // macOS fine-step volume: Shift+Option+Vol ≈ 1.5625 % per tap; ×3 ≈ 4.7 % ≈ 5 %.
         case KC_VOL_UP:
-            if (record->event.pressed) {
-                for (uint8_t i = 0; i < 3; i++) tap_code16(LSFT(LALT(KC_VOLU)));
-            }
+            if (record->event.pressed) vol_request(VOL_TAPS_PER_TICK);
             return false;
         case KC_VOL_DN:
-            if (record->event.pressed) {
-                for (uint8_t i = 0; i < 3; i++) tap_code16(LSFT(LALT(KC_VOLD)));
-            }
+            if (record->event.pressed) vol_request(-VOL_TAPS_PER_TICK);
             return false;
 
         // Slack: react to last message. Slack default = Shift+Cmd+\.

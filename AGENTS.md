@@ -81,6 +81,28 @@ gif_display.c   — LCD full-screen GIF (mode 4)
 | SYM | Volume ↕ |
 | META | Animation speed ↕ |
 
+#### Volume step size (macOS-specific)
+
+Each encoder click sends **Shift+Option+Volume Up/Down**, which macOS treats as a
+fine step of 1/64 of full scale (**1.6 %**). A plain Volume key would be 1/16
+(6.25 %), too coarse for a dial. Taps per click are set by `VOL_TAPS_PER_TICK` in
+`keymap.c` (1 = 1.6 %, 2 = 3.1 %, 4 = 6.25 %). 2.5 % is not reachable: macOS only
+offers those two granularities from a keyboard.
+
+The modifiers are held for the whole burst and the volume press/release is spaced
+by a deferred task (`vol_request` / `vol_drain` in `keymap.c`). Modifier and
+volume reports travel on different USB endpoints, so firing them back to back lets
+the host see Volume before Shift+Option (a 6.25 % jump) or Option alone (opens
+Sound Settings). Do not go back to `tap_code16(LSFT(LALT(KC_VOLU)))` in a loop.
+
+On other operating systems the modifiers are ignored or harmful, not finer:
+
+- **Windows** ignores modifiers on consumer volume keys and always steps 2 %.
+- **Linux** depends on the desktop: GNOME ~6 %, KDE 5 %, and Shift+Alt may be
+  grabbed as a shortcut. `OS_DETECTION_ENABLE` is already on, so sending plain
+  `KC_VOLU`/`KC_VOLD` when `detected_host_os() != OS_MACOS` is the fix if the
+  keyboard is ever used there.
+
 ### META layer RGB controls (right side)
 
 ```
