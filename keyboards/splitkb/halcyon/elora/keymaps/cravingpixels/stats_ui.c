@@ -44,8 +44,9 @@ extern int8_t   layer_hue_offset;
 #define UI_Y_SEP3       112
 #define UI_Y_WPM_LBL    116
 
-// 128 = 100 % brightness; display can show values above 100 % if val > 128.
-#define UI_LED_MAX      128
+// 100 % = the brightness cap from config.h, so the gauge tops out at 100 % exactly
+// when RM_VALU stops having an effect.
+#define UI_LED_MAX      RGB_MATRIX_MAXIMUM_BRIGHTNESS
 #define LOCK_NOTIFY_MS 3000
 #define TOAST_MS       3000
 
@@ -372,6 +373,14 @@ void stats_ui_show_next_metric(void) {
         case TOAST_SPD:  toast_which = TOAST_HUE; break;
         default:         toast_which = TOAST_NONE; break;
     }
+    toast_start = timer_read32();
+}
+
+// Called on every RM_VALU/RM_VALD press. The auto-show in stats_ui_draw only
+// fires when the value changes, so at the cap (or at 0) the toast would stay
+// hidden and the user gets no feedback that the key was taken.
+void stats_ui_show_led(void) {
+    toast_which = TOAST_LED;
     toast_start = timer_read32();
 }
 

@@ -735,6 +735,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed) layer_hue_offset = 0;
             return false;
 
+        // Brightness keys stay QMK-handled; this only makes the LED toast appear
+        // when the value is already pinned at the cap or at zero.
+        case RM_VALU:
+        case RM_VALD:
+#ifdef HLC_TFT_DISPLAY
+            if (record->event.pressed && current_display_mode == 2) stats_ui_show_led();
+#endif
+            return true;
+
         case KC_VOL_UP:
             if (record->event.pressed) vol_request(+1);
             return false;

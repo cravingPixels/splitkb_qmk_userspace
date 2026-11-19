@@ -8,5 +8,6 @@ void stats_ui_invalidate_gif(void);  // invalidate and start in GIF sub-mode
 void stats_ui_cleanup(void);
 void stats_ui_cycle_bottom(void);       // cycle dsp2 bottom strip sub-mode
 void stats_ui_show_next_metric(void);   // manually cycle the metric toast (TT→LED→SPD→HUE→none)
+void stats_ui_show_led(void);           // show the LED toast even when the value did not change
 
 #endif  // HLC_TFT_DISPLAY
