@@ -95,13 +95,15 @@ volume reports travel on different USB endpoints, so firing them back to back le
 the host see Volume before Shift+Option (a 6.25 % jump) or Option alone (opens
 Sound Settings). Do not go back to `tap_code16(LSFT(LALT(KC_VOLU)))` in a loop.
 
-On other operating systems the modifiers are ignored or harmful, not finer:
+On other operating systems the modifiers are ignored or harmful, not finer, so
+`vol_request` checks `detected_host_os()` and sends a bare volume key, one per
+click, unless the host is macOS/iOS:
 
 - **Windows** ignores modifiers on consumer volume keys and always steps 2 %.
 - **Linux** depends on the desktop: GNOME ~6 %, KDE 5 %, and Shift+Alt may be
-  grabbed as a shortcut. `OS_DETECTION_ENABLE` is already on, so sending plain
-  `KC_VOLU`/`KC_VOLD` when `detected_host_os() != OS_MACOS` is the fix if the
-  keyboard is ever used there.
+  grabbed as a shortcut.
+- Detection settles within the first second after plugging in; until then the
+  bare key is sent.
 
 ### META layer RGB controls (right side)
 

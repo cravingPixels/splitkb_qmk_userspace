@@ -16,14 +16,16 @@
 // Only applies on first boot or after EEPROM clear; runtime changes via Spd±/encoder persist.
 #define RGB_MATRIX_DEFAULT_SPD 64
 
-// Max brightness: 154 = 120 % of 128 (display reference). Going above 128 increases LED
-// heat on the RP2040, so 120 % is the intentional ceiling.
-// Val step: 6 units ≈ 5 % of 128 per encoder click.
+// Max brightness: 100 (splitkb reference is 128). The USB descriptor promises the host
+// 500 mA; 74 LEDs plus the TFT backlight exceeded that at 154 and macOS cut power to
+// the port whenever another device was plugged in. Raise only in small steps and only
+// if the shutoffs stay gone.
+// Val step: 6 units ≈ 6 % of 100 per encoder click.
 // Idle timeout is handled in keymap.c (dim to 20% at 5 min, off at 15 min).
 // RGB_MATRIX_TIMEOUT is intentionally not set here — setting it would cut power to the
 // RGB matrix before our smooth-dim logic can run.
 #undef  RGB_MATRIX_MAXIMUM_BRIGHTNESS
-#define RGB_MATRIX_MAXIMUM_BRIGHTNESS 154
+#define RGB_MATRIX_MAXIMUM_BRIGHTNESS 100
 #define RGB_MATRIX_VAL_STEP            6
 
 // Enable specific animations (keep only what you use to save firmware space)

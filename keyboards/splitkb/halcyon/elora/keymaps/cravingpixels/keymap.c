@@ -399,8 +399,13 @@ static uint32_t ss5_deferred(uint32_t trigger_time, void *cb_arg) {
 // to apply each modifier change, and spaces the volume press/release by
 // VOL_TAP_MS. Encoder ticks only bump a counter, so a fast spin never blocks
 // the main loop or overflows the 4-slot encoder event queue.
+//
+// Only macOS understands Shift+Option as "fine step". Windows ignores the
+// modifiers (always 2 % per key), and Linux desktops may grab Shift+Alt as a
+// shortcut, so on any host that OS detection does not report as macOS/iOS the
+// drain sends a bare volume key, one per click.
 // ---------------------------------------------------------------------------
-#define VOL_TAPS_PER_TICK   1    // 1 = 1.6 % per click, 2 = 3.1 %, 4 = 6.25 %
+#define VOL_TAPS_PER_TICK   1    // macOS only: 1 = 1.6 % per click, 2 = 3.1 %, 4 = 6.25 %
 #define VOL_MOD_SETTLE_MS   15
 #define VOL_TAP_MS          10
 #define VOL_PENDING_MAX     16   // caps the backlog from a long fast spin
@@ -441,15 +446,23 @@ static uint32_t vol_drain(uint32_t trigger_time, void *cb_arg) {
     return 0;
 }
 
-static void vol_request(int8_t taps) {
-    int16_t next = (int16_t)vol_pending + taps;
+static bool vol_host_has_fine_step(void) {
+    os_variant_t os = detected_host_os();
+    return os == OS_MACOS || os == OS_IOS;
+}
+
+// direction: +1 volume up, -1 volume down (one encoder click).
+static void vol_request(int8_t direction) {
+    bool    fine = vol_host_has_fine_step();
+    int8_t  taps = fine ? VOL_TAPS_PER_TICK : 1;
+    int16_t next = (int16_t)vol_pending + direction * taps;
     if (next >  VOL_PENDING_MAX) next =  VOL_PENDING_MAX;
     if (next < -VOL_PENDING_MAX) next = -VOL_PENDING_MAX;
     vol_pending = (int8_t)next;
 
     if (vol_state != VOL_IDLE) return;
 
-    vol_mods_added = VOL_MODS & ~get_mods();
+    vol_mods_added = fine ? (VOL_MODS & ~get_mods()) : 0;
     register_mods(vol_mods_added);
     vol_state = VOL_MODS_SETTLING;
     defer_exec(VOL_MOD_SETTLE_MS, vol_drain, NULL);
@@ -723,10 +736,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
 
         case KC_VOL_UP:
-            if (record->event.pressed) vol_request(VOL_TAPS_PER_TICK);
+            if (record->event.pressed) vol_request(+1);
             return false;
         case KC_VOL_DN:
-            if (record->event.pressed) vol_request(-VOL_TAPS_PER_TICK);
+            if (record->event.pressed) vol_request(-1);
             return false;
 
         // Slack: react to last message. Slack default = Shift+Cmd+\.
