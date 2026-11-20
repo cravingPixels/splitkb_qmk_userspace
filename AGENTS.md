@@ -177,7 +177,7 @@ mise run convert          # PNG/GIF → QGF
 - Draw to `lcd_surface`, never directly to `lcd` — the module flushes automatically
 - RGB layer config and LED map live in `rgb_layers.h`
 - Display rendering lives in `display.c`
-- PNG source assets live in `../custom-keyboard-config/graphics/lcd/assets/`
+- GIF/PNG source assets live in `keymaps/cravingpixels/assets/` (`*_raw.gif` = originals, the others are the trimmed versions fed to `mise run convert-gif`)
 
 ## What NOT to do
 

@@ -7,7 +7,7 @@ KEYMAP       = "cravingpixels"
 TARGET_LEFT  = "splitkb_halcyon_elora_rev2_cravingpixels_left"
 TARGET_RIGHT = "splitkb_halcyon_elora_rev2_cravingpixels_right"
 KEYMAP_DIR   = "{{config_root}}/keyboards/splitkb/halcyon/elora/keymaps/cravingpixels"
-ASSETS_DIR   = "{{config_root}}/../custom-keyboard-config/graphics/lcd/assets"
+ASSETS_DIR   = "{{config_root}}/keyboards/splitkb/halcyon/elora/keymaps/cravingpixels/assets"
 QMK_HOME     = "~/.local/share/qmk_firmware"
 
 # ── One-time setup ─────────────────────────────────────────────────────────
