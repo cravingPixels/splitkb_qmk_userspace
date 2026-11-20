@@ -44,6 +44,7 @@ enum custom_keycodes {
     KC_HUE_RESET,               // Reset layer palette hue offset to 0
     KC_VOL_UP,                  // macOS fine volume up (Sft+Opt+Vol, VOL_TAPS_PER_TICK taps per tick)
     KC_VOL_DN,                  // macOS fine volume down (Sft+Opt+Vol, VOL_TAPS_PER_TICK taps per tick)
+    KC_KNOB,                    // Encoder button: tap = mute, hold + turn = seek (see knob_*)
     SLACK_REACT,                // Slack: react to last message — taps Up, then Cmd+Shift+backslash
     // SYM home row mods on shifted symbols. QMK's MT() drops the shift bit
     // from the tap keycode, so LGUI_T(KC_CIRC) would send "6" on tap instead
@@ -96,7 +97,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       KC_GRAVE,        KC_Z,         KC_X,          KC_C,          KC_V,            KC_B,                 KC_BSPC,        KC_CAPS,     KC_DEL,   SS5_KEY,          KC_N,               KC_M,            KC_COMMA,        KC_DOT,          KC_SLASH,        KC_RSFT,
                                                     MO(_META),     OSM(MOD_HYPR),   LT(_NUMFN, KC_SPACE), MEH_T(KC_BSPC), MO(_SYM),    MO(_SYM), MEH_T(KC_DELETE), LT(_NAV, KC_ENTER), OSM(MOD_HYPR),   MO(_APPS),
 
-      KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                             KC_MUTE,      KC_NO, KC_NO, KC_NO, KC_NO
+      KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,                                                                                                                                             KC_KNOB,      KC_NO, KC_NO, KC_NO, KC_NO
     ),
 
 /*
@@ -460,6 +461,36 @@ static uint32_t vol_drain(uint32_t trigger_time, void *cb_arg) {
     return 0;
 }
 
+// Encoder button. Tap = mute. While held, the volume keycodes coming from the
+// encoder map turn into seek keys instead, so hold + turn scrubs a video and the
+// knob is volume again on release. A hold that never turned sends nothing, so a
+// long press cannot mute by accident.
+#define KNOB_SEEK_CCW KC_LEFT
+#define KNOB_SEEK_CW  KC_RIGHT
+
+static bool     knob_held       = false;
+static bool     knob_turned     = false;
+static uint16_t knob_press_time = 0;
+
+static void knob_press(bool pressed) {
+    if (pressed) {
+        knob_held       = true;
+        knob_turned     = false;
+        knob_press_time = timer_read();
+        return;
+    }
+    knob_held = false;
+    if (!knob_turned && timer_elapsed(knob_press_time) < g_tapping_term) tap_code(KC_MUTE);
+}
+
+// Returns true when the encoder click was consumed as a seek step.
+static bool knob_seek(int8_t direction) {
+    if (!knob_held) return false;
+    knob_turned = true;
+    tap_code(direction > 0 ? KNOB_SEEK_CW : KNOB_SEEK_CCW);
+    return true;
+}
+
 static bool vol_host_has_fine_step(void) {
     os_variant_t os = detected_host_os();
     return os == OS_MACOS || os == OS_IOS;
@@ -797,10 +828,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return true;
 
         case KC_VOL_UP:
-            if (record->event.pressed) vol_request(+1);
+            if (record->event.pressed && !knob_seek(+1)) vol_request(+1);
             return false;
         case KC_VOL_DN:
-            if (record->event.pressed) vol_request(-1);
+            if (record->event.pressed && !knob_seek(-1)) vol_request(-1);
+            return false;
+        case KC_KNOB:
+            knob_press(record->event.pressed);
             return false;
 
         // Slack: react to last message. Slack default = Shift+Cmd+\.

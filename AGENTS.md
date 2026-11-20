@@ -81,6 +81,10 @@ gif_display.c   — LCD full-screen GIF (mode 4)
 | SYM | Volume ↕ |
 | META | Animation speed ↕ |
 
+**Encoder button** (`KC_KNOB`, BASE): tap = mute; hold + turn = Left/Right arrow
+(seek in YouTube, VLC, QuickTime), release = back to volume. A hold that never
+turns sends nothing. Seek keys are `KNOB_SEEK_CCW` / `KNOB_SEEK_CW` in `keymap.c`.
+
 #### Volume step size (macOS-specific)
 
 Each encoder click sends **Shift+Option+Volume Up/Down**, which macOS treats as a
