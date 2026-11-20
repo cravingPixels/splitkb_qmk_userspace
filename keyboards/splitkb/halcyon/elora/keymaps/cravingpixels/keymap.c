@@ -255,6 +255,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // clang-format on
 
 // ---------------------------------------------------------------------------
+// Chordal Hold handedness (see CHORDAL_HOLD in config.h)
+// 'L'/'R' = hand, '*' = exempt: may be held together with any key.
+// ---------------------------------------------------------------------------
+const char chordal_hold_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT_elora_hlc(
+    'L', 'L', 'L', 'L', 'L', 'L',                                     'R', 'R', 'R', 'R', 'R', 'R',
+    'L', 'L', 'L', 'L', 'L', 'L',                                     'R', 'R', 'R', 'R', 'R', 'R',
+    'L', 'L', 'L', 'L', 'L', 'L',                                     'R', 'R', 'R', 'R', 'R', 'R',
+    'L', 'L', 'L', 'L', 'L', 'L', '*', 'L',                 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R',
+                        '*', '*', '*', '*', '*',            '*', '*', '*', '*', '*',
+    '*', '*', '*', '*', '*',                                          '*', '*', '*', '*', '*'
+);
+
+// ---------------------------------------------------------------------------
 // Encoder map
 // 4 encoders: Enc0=left-outer, Enc1=left-inner, Enc2=right-inner, Enc3=right-outer
 // ---------------------------------------------------------------------------

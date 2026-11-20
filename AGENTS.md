@@ -30,7 +30,7 @@ This repo is a fork of [splitkb/qmk_userspace](https://github.com/splitkb/qmk_us
 | LCD pet/Tamagotchi mode | planned | sprites not started |
 | LCD ambient/time-of-day mode | planned | needs macOS time-sync daemon (Raw HID) |
 | Time sync daemon (macOS → Raw HID) | planned | needed for ambient mode |
-| Tapping term tuning | pending | TAPPING_TERM=175ms, needs real-world testing |
+| Tapping term tuning | pending | TAPPING_TERM=175ms + CHORDAL_HOLD + PERMISSIVE_HOLD since 2026-11-20, needs real-world testing |
 
 ## Key Reference Files (read these when debugging — don't guess)
 

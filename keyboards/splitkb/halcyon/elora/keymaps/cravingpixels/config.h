@@ -7,6 +7,12 @@
 // Value from Vial settings key "4": 175
 #define TAPPING_TERM 175
 #define TAPPING_TERM_PER_KEY
+// Home-row mods: a same-hand roll (e.g. "sd" with LALT_T(S)) always settles as a tap,
+// an opposite-hand nested press settles as a hold before the tapping term. Thumb,
+// encoder and inner Bspc/Del keys are exempt in chordal_hold_layout (keymap.c) so
+// one-handed Ctrl+Backspace style chords keep working.
+#define CHORDAL_HOLD
+#define PERMISSIVE_HOLD
 
 // --- RGB Matrix ---
 #define RGB_MATRIX_KEYPRESSES          // needed for reactive animations (solid_reactive, splash)
