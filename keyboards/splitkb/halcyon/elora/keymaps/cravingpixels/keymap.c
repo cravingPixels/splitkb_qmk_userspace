@@ -482,8 +482,42 @@ static void vol_request(int8_t direction) {
 
 static uint8_t current_display_mode = 2;  // 1 = stock HLC, 2 = stats (default)
 
+// The ST7789 keeps its own state and gets its init sequence exactly once, at boot
+// (module_post_init_kb in hlc_tft_display.c). A dip on the USB rail or a host sleep
+// can reset the panel while the RP2040 keeps running: the panel then sits in sleep
+// mode with the backlight on and ignores every pixel write until it is initialised
+// again. Nothing in QMK or the module does that, so do it here whenever the display
+// was dark anyway: on the first input after the module's backlight timeout, and
+// after a USB resume. The surface framebuffer in RAM is still valid, so it is pushed
+// back as a whole instead of resetting any UI state. qp_init blocks for ~150 ms.
+static volatile bool lcd_reinit_pending = false;
+
+static void lcd_reinit(void) {
+    qp_init(lcd, LCD_ROTATION);
+    qp_set_viewport_offsets(lcd, LCD_OFFSET_X, LCD_OFFSET_Y);
+    qp_surface_draw(lcd_surface, lcd, 0, 0, true);
+    qp_flush(lcd);
+}
+
+// Called from the USB interrupt: only raise the flag, the SPI work runs in the
+// housekeeping task.
+void suspend_wakeup_init_user(void) {
+    lcd_reinit_pending = true;
+}
+
+static void lcd_reinit_task(void) {
+    static bool was_idle = false;
+    bool        idle     = last_input_activity_elapsed() > HLC_BACKLIGHT_TIMEOUT;
+    if (was_idle && !idle) lcd_reinit_pending = true;
+    was_idle = idle;
+    if (!lcd_reinit_pending) return;
+    lcd_reinit_pending = false;
+    lcd_reinit();
+}
+
 bool display_module_housekeeping_task_user(bool second_display) {
     if (second_display) return true;
+    lcd_reinit_task();
 
     static uint8_t prev_mode = 0xFF;
 
