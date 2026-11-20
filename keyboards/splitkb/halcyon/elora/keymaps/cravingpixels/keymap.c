@@ -18,6 +18,7 @@
 #include "transactions.h"
 #ifdef HLC_TFT_DISPLAY
 #    include "users/halcyon_modules/splitkb/hlc_tft_display/hlc_tft_display.h"
+#    include "qp_surface_internal.h"  // surface dirty flag, see lcd_reinit
 #    include "gif_display.h"
 #    include "stats_ui.h"
 #    include "conway.h"
@@ -495,6 +496,10 @@ static volatile bool lcd_reinit_pending = false;
 static void lcd_reinit(void) {
     qp_init(lcd, LCD_ROTATION);
     qp_set_viewport_offsets(lcd, LCD_OFFSET_X, LCD_OFFSET_Y);
+    // qp_surface_draw returns early on a clean surface even with entire_surface set,
+    // and the surface is clean whenever nothing changed since the last flush. Mark
+    // it dirty so the whole framebuffer reaches the freshly reset panel.
+    ((surface_painter_device_t *)lcd_surface)->dirty.is_dirty = true;
     qp_surface_draw(lcd_surface, lcd, 0, 0, true);
     qp_flush(lcd);
 }
