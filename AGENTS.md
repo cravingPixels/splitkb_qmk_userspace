@@ -25,6 +25,7 @@ This repo is a fork of [splitkb/qmk_userspace](https://github.com/splitkb/qmk_us
 | Animation speed control | done | RM_SPDU/RM_SPDD keys + encoder in META; default 64/255 |
 | LCD stock display | done | mode 1 — HLC default layer/WPM/modifier widget |
 | LCD stats display | done | mode 2 — layer name, lock indicators, TT, LED val, WPM/GIF/marquee |
+| Boot diagnostics | done | boot_diag.c — reset cause + previous session uptime in the stats toast cycle (`POR 12mz`), for the USB drop-outs since 2026-11-20 |
 | LCD Conway's Game of Life | done | mode 3 |
 | LCD full-screen GIF | done | mode 4 — shiny mew sleeping GIF |
 | LCD pet/Tamagotchi mode | planned | sprites not started |
@@ -56,6 +57,7 @@ config.h        — tapping term, RGB settings, HID config, split transaction ID
 rules.mk        — enabled features
 rgb_layers.h    — layer enum, Catppuccin HSV colors, per-key LED dimming, animation override
 stats_ui.c      — LCD stats display (mode 2): layer name/color, locks, TT, LED val, WPM
+boot_diag.c     — reset cause (RP2040 CHIP_RESET) + previous session uptime/suspend flag in the user EEPROM word
 conway.c        — LCD Conway's Game of Life (mode 3)
 gif_display.c   — LCD full-screen GIF (mode 4)
 *.qgf.* *.qff.* — converted image/font assets (compiled into firmware via SRC +=, must be committed)

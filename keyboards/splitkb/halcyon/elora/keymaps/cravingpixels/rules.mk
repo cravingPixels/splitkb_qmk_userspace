@@ -16,5 +16,6 @@ SRC += sleeping_snorlax_120x96.qgf.c
 SRC += FiraCodeNerdFontMono-Regular-24.qff.c
 SRC += stats_ui.c
 SRC += conway.c
+SRC += boot_diag.c
 endif
 

@@ -8,6 +8,7 @@
 #include "users/halcyon_modules/splitkb/hlc_tft_display/hlc_tft_display.h"
 #include "FiraCodeNerdFontMono-Regular-24.qff.h"
 #include "sleeping_snorlax_120x96.qgf.h"
+#include "boot_diag.h"
 
 extern uint16_t g_tapping_term;
 extern bool     rgb_animation_override;
@@ -20,6 +21,7 @@ extern int8_t   layer_hue_offset;
 //   y=39  [■] [■] [■]        lock indicators (CAP / NUM / SCR)
 //   y=66  ─── separator
 //   y=70  metric toast        blank when idle; flashes for 3 s on value change
+//                             (boot readout shown once for 3 s after power-up)
 //   y=100 metric bar          (or colour swatch for HUE toast)
 //   y=112 ─── separator
 //   y=116 bottom strip — cycles per dsp2 press:
@@ -57,6 +59,7 @@ typedef enum {
     TOAST_LED,   // LED brightness (% where 128 = 100 %)
     TOAST_SPD,   // animation speed (0-255)
     TOAST_HUE,   // anim hue (animation mode) or palette hue offset (static mode)
+    TOAST_BOOT,  // reset cause + previous session length (boot_diag.c)
 } toast_which_t;
 
 // ── dsp2 bottom sub-modes ─────────────────────────────────────────────────────
@@ -309,6 +312,11 @@ static void draw_toast_content(toast_which_t which, uint8_t layer) {
             qp_rect(lcd_surface, UI_M, UI_Y_METRIC_BAR, UI_M + w - 1, UI_Y_METRIC_BAR + UI_BAR_H - 1, h, s, 200, true);
             break;
         }
+        case TOAST_BOOT: {
+            boot_diag_label(buf, sizeof(buf));
+            qp_drawtext_recolor(lcd_surface, UI_M, UI_Y_METRIC_LBL, ui_font, buf, 0, 0, 200, 0, 0, 0);
+            break;
+        }
         default:
             break;
     }
@@ -365,12 +373,13 @@ static void draw_marquee_tick(const char *text, uint8_t fg_h, uint8_t fg_s, uint
 
 // ── Public API ────────────────────────────────────────────────────────────────
 void stats_ui_show_next_metric(void) {
-    // Cycle: NONE → TT → LED → SPD → HUE → NONE → …
+    // Cycle: NONE → TT → LED → SPD → HUE → BOOT → NONE → …
     switch (toast_which) {
-        case TOAST_NONE: toast_which = TOAST_TT;  break;
-        case TOAST_TT:   toast_which = TOAST_LED; break;
-        case TOAST_LED:  toast_which = TOAST_SPD; break;
-        case TOAST_SPD:  toast_which = TOAST_HUE; break;
+        case TOAST_NONE: toast_which = TOAST_TT;   break;
+        case TOAST_TT:   toast_which = TOAST_LED;  break;
+        case TOAST_LED:  toast_which = TOAST_SPD;  break;
+        case TOAST_SPD:  toast_which = TOAST_HUE;  break;
+        case TOAST_HUE:  toast_which = TOAST_BOOT; break;
         default:         toast_which = TOAST_NONE; break;
     }
     toast_start = timer_read32();
@@ -481,6 +490,13 @@ void stats_ui_draw(void) {
         prev.hue_offset = layer_hue_offset;
         prev.is_anim    = is_anim;
         if (dsp2_submode == DSP2_WPM) { draw_wpm(wpm); prev.wpm = wpm; }
+        // Boot readout once per power-up, so a reboot is noticed without pressing anything.
+        static bool boot_toast_shown = false;
+        if (!boot_toast_shown) {
+            boot_toast_shown = true;
+            toast_which      = TOAST_BOOT;
+            toast_start      = timer_read32();
+        }
         return;
     }
 

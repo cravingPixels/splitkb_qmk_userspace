@@ -22,6 +22,7 @@
 #    include "gif_display.h"
 #    include "stats_ui.h"
 #    include "conway.h"
+#    include "boot_diag.h"
 #endif
 
 // ---------------------------------------------------------------------------
@@ -305,10 +306,16 @@ static void rgb_anim_sync_handler(uint8_t in_buflen, const void *in_data,
 
 void keyboard_post_init_user(void) {
     transaction_register_rpc(USER_SYNC_RGB_ANIM, rgb_anim_sync_handler);
+#ifdef HLC_TFT_DISPLAY
+    boot_diag_init();
+#endif
 }
 
 void housekeeping_task_user(void) {
     if (!is_keyboard_master()) return;
+#ifdef HLC_TFT_DISPLAY
+    boot_diag_task();
+#endif
     static bool  last_anim   = false;
     static int8_t last_offset = 0;
     if (last_anim == rgb_animation_override && last_offset == layer_hue_offset) return;
@@ -552,6 +559,7 @@ static void lcd_reinit(void) {
 // housekeeping task.
 void suspend_wakeup_init_user(void) {
     lcd_reinit_pending = true;
+    boot_diag_wakeup();
 }
 
 static void lcd_reinit_task(void) {
