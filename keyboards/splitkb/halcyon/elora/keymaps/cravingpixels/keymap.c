@@ -24,6 +24,7 @@
 #    include "conway.h"
 #    include "boot_diag.h"
 #endif
+#include "usb_recover.h"
 
 // ---------------------------------------------------------------------------
 // Custom keycodes
@@ -302,6 +303,14 @@ static void rgb_anim_sync_handler(uint8_t in_buflen, const void *in_data,
     const rgb_sync_t *d = (const rgb_sync_t *)in_data;
     rgb_animation_override = d->anim_override;
     layer_hue_offset       = d->hue_offset;
+}
+
+// Suspend loop hook: USB link watchdog on every half, boot diagnostics on the LCD half.
+void suspend_power_down_user(void) {
+#ifdef HLC_TFT_DISPLAY
+    boot_diag_suspend();
+#endif
+    usb_recover_tick();
 }
 
 void keyboard_post_init_user(void) {

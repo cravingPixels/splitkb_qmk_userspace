@@ -9,6 +9,8 @@ RAW_ENABLE = yes
 WPM_ENABLE = yes
 OS_DETECTION_ENABLE = yes
 
+SRC += usb_recover.c
+
 ifdef HLC_TFT_DISPLAY
 SRC += gif_display.c
 SRC += gif1.qgf.c

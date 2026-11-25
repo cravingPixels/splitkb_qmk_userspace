@@ -75,7 +75,7 @@ void boot_diag_task(void) {
 
 // Runs inside QMK's suspend loop every ~17 ms while the USB driver reports
 // suspended. The flash write happens once, on entry.
-void suspend_power_down_user(void) {
+void boot_diag_suspend(void) {
     if (suspended) return;
     suspended = true;
     write_session();
